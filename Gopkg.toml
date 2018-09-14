@@ -26,8 +26,24 @@
 
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/openshift/generic-admission-server"
+
+[[constraint]]
+  version = "kubernetes-1.11.1"
+  name = "k8s.io/api"
+
+[[constraint]]
+  version = "kubernetes-1.11.1"
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.0"
+
+[[override]]
+  version = "kubernetes-1.11.1"
+  name = "k8s.io/apiserver"
 
 [[constraint]]
   name = "k8s.io/client-go"
