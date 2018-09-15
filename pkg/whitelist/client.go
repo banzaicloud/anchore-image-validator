@@ -1,9 +1,9 @@
 package whitelist
 
 import (
-	"log"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -12,11 +12,11 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
 
-func GetWhiteList() ([]v1alpha1.WhiteList, error) {
+func getWhiteList() ([]v1alpha1.WhiteList, error) {
 	var config *rest.Config
 	var err error
 
-	log.Printf("using in-cluster configuration")
+	glog.Info("using in-cluster configuration")
 	config, err = rest.InClusterConfig()
 
 	v1alpha1.AddToScheme(scheme.Scheme)
@@ -29,7 +29,7 @@ func GetWhiteList() ([]v1alpha1.WhiteList, error) {
 
 	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
 	if err != nil {
-		panic(err)
+		glog.Error(err)
 	}
 
 	result := v1alpha1.WhiteListList{}
@@ -39,9 +39,9 @@ func GetWhiteList() ([]v1alpha1.WhiteList, error) {
 }
 
 func CheckWhiteList(s string) bool {
-	wl, err := GetWhiteList()
+	wl, err := getWhiteList()
 	if err != nil {
-		panic(err)
+		glog.Errorf("Reading whitelists failed: %s ", err)
 	}
 
 	for _, res := range wl {

@@ -49,7 +49,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 		if !whitelist.CheckWhiteList(pod.Name) {
 			for _, container := range pod.Spec.Containers {
 				image := container.Image
-				glog.Info("Checking image: " + image)
+				glog.Infof("Checking image: %s", image)
 				if !anchore.CheckImage(image) {
 					status.Result.Status = "Failure"
 					status.Allowed = false
@@ -58,13 +58,14 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 					glog.Warning(message)
 					return status
 				} else {
-					glog.Info("Image passed policy check: " + image)
+					glog.Infof("Image passed policy check: %s", image)
 				}
 			}
 		} else {
-			glog.Info("Image passed policy check skipped: " + pod.Name)
+			glog.Info("Whitelisted image name, policy check skipped: " + pod.Name)
 		}
 	}
+	glog.Flush()
 	return status
 }
 

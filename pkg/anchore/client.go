@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 func anchoreRequest(path string, bodyParams map[string]string, method string) ([]byte, error) {
@@ -55,13 +56,11 @@ func getStatus(digest string, tag string) bool {
 		return false
 	}
 
-	// Is this the easiest way to get this info?
 	resultIndex := fmt.Sprintf("docker.io/%s:latest", tag)
 	return result[0][digest][resultIndex][0].Status == "pass"
 }
 
 func getImage(imageRef string) (Image, error) {
-	// Tag or repo??
 	params := map[string]string{"tag": imageRef}
 	body, err := anchoreRequest("/v1/images?history=false", params, "GET")
 	if err != nil {
