@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/pbalogh-sa/crd-test/pkg/apis/security/v1alpha1"
+	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
 
 var kubeconfig string

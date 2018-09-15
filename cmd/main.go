@@ -14,8 +14,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/pbalogh-sa/crd-test/pkg/anchore"
-	"github.com/pbalogh-sa/crd-test/pkg/whitelist"
+	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
+	"github.com/banzaicloud/anchore-image-validator/pkg/whitelist"
 )
 
 type admissionHook struct {
