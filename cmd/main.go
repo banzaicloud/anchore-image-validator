@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-
-	"sync"
 	"encoding/json"
+	"fmt"
+	"sync"
 
 	"github.com/golang/glog"
 	"github.com/openshift/generic-admission-server/pkg/cmd"
@@ -13,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	 "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 
 	"github.com/pbalogh-sa/crd-test/pkg/anchore"
 	"github.com/pbalogh-sa/crd-test/pkg/whitelist"
@@ -67,7 +66,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 				return status
 			} else {
 				glog.Info("Image passed policy check: " + image)
-				glog.Info("aaaaaaaa" + pod.Name
+				glog.Info("aaaaaaaa" + pod.Name)
 			}
 		}
 
