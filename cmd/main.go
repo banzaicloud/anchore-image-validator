@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"github.com/openshift/generic-admission-server/pkg/cmd"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,15 +25,7 @@ type admissionHook struct {
 }
 
 func main() {
-	result, err := whitelist.GetWhiteList()
-	if err != nil {
-		panic(err)
-	}
-	for _, res := range result {
-		fmt.Println(res)
-	}
-
-	// cmd.RunAdmissionServer(&admissionHook{})
+	cmd.RunAdmissionServer(&admissionHook{})
 }
 
 func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
@@ -53,22 +46,24 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 	if admissionSpec.Kind.Kind == "Pod" {
 		pod := v1.Pod{}
 		json.Unmarshal(admissionSpec.Object.Raw, &pod)
-		for _, container := range pod.Spec.Containers {
-			image := container.Image
-			glog.Info("Checking image: " + image)
-			if !anchore.CheckImage(image) {
-				status.Result.Status = "Failure"
-				status.Allowed = false
-				message := fmt.Sprintf("Image failed policy check: %s", image)
-				status.Result.Message = message
-				glog.Warning(message)
-				return status
-			} else {
-				glog.Info("Image passed policy check: " + image)
-				glog.Info("aaaaaaaa" + pod.Name)
+		if !whitelist.CheckWhiteList(pod.Name) {
+			for _, container := range pod.Spec.Containers {
+				image := container.Image
+				glog.Info("Checking image: " + image)
+				if !anchore.CheckImage(image) {
+					status.Result.Status = "Failure"
+					status.Allowed = false
+					message := fmt.Sprintf("Image failed policy check: %s", image)
+					status.Result.Message = message
+					glog.Warning(message)
+					return status
+				} else {
+					glog.Info("Image passed policy check: " + image)
+				}
 			}
+		} else {
+			glog.Info("Image passed policy check skipped: " + pod.Name)
 		}
-
 	}
 	return status
 }

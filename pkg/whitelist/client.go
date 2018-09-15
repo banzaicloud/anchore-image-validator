@@ -1,40 +1,23 @@
 package whitelist
 
 import (
-	"flag"
 	"log"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
-
-var kubeconfig string
-
-func init() {
-	flag.StringVar(&kubeconfig, "kubeconfig", "", "")
-	flag.Parse()
-}
 
 func GetWhiteList() ([]v1alpha1.WhiteList, error) {
 	var config *rest.Config
 	var err error
 
-	if kubeconfig == "" {
-		log.Printf("using in-cluster configuration")
-		config, err = rest.InClusterConfig()
-	} else {
-		log.Printf("using configuration from '%s'", kubeconfig)
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-	}
-
-	if err != nil {
-		panic(err)
-	}
+	log.Printf("using in-cluster configuration")
+	config, err = rest.InClusterConfig()
 
 	v1alpha1.AddToScheme(scheme.Scheme)
 
@@ -53,4 +36,18 @@ func GetWhiteList() ([]v1alpha1.WhiteList, error) {
 	err = exampleRestClient.Get().Resource("whitelists").Do().Into(&result)
 
 	return result.Items, err
+}
+
+func CheckWhiteList(s string) bool {
+	wl, err := GetWhiteList()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, res := range wl {
+		if strings.Contains(s, res.Spec.ReleaseName) {
+			return true
+		}
+	}
+	return false
 }

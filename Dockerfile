@@ -1,7 +1,9 @@
 FROM golang:1-alpine
 
-WORKDIR /go/src/github.com/banzaicloud/anchore-image-validator
+ENV NAME=anchore-image-validator
+
+WORKDIR /go/src/github.com/banzaicloud/$NAME
 COPY . .
 RUN cd cmd && \
-    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /anchore-image-validator
-CMD ["/anchore-image-validator"]
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /$NAME
+CMD ["/$NAME"]
