@@ -16,7 +16,7 @@ import (
 var kubeconfig string
 
 func init() {
-	flag.StringVar(&kubeconfig, "kubeconfig", "/Users/poke/.kube/config", "/Users/poke/.kube/config")
+	flag.StringVar(&kubeconfig, "kubeconfig", "", "")
 	flag.Parse()
 }
 

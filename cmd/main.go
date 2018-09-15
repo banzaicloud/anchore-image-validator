@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
-	"github.com/openshift/generic-admission-server/pkg/cmd"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,12 +32,12 @@ func main() {
 		fmt.Println(res)
 	}
 
-	cmd.RunAdmissionServer(&admissionHook{})
+	// cmd.RunAdmissionServer(&admissionHook{})
 }
 
 func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "poke.admission.anchore.io",
+			Group:    "admission.anchore.io",
 			Version:  "v1beta1",
 			Resource: "imagechecks",
 		},
