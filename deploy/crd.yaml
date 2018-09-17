@@ -11,7 +11,7 @@ spec:
     singular: whitelist
     shortnames:
       - wl
-  scope: Namespaced
+  scope: Cluster
   validation:
     openAPIV3Schema:
       properties:
