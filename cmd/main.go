@@ -46,25 +46,32 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 	if admissionSpec.Kind.Kind == "Pod" {
 		pod := v1.Pod{}
 		json.Unmarshal(admissionSpec.Object.Raw, &pod)
-		if !whitelist.CheckWhiteList(pod.Name) {
-			for _, container := range pod.Spec.Containers {
-				image := container.Image
-				glog.Infof("Checking image: %s", image)
-				if !anchore.CheckImage(image) {
-					status.Result.Status = "Failure"
-					status.Allowed = false
-					message := fmt.Sprintf("Image failed policy check: %s", image)
-					status.Result.Message = message
-					glog.Warning(message)
-					return status
-				} else {
-					glog.Infof("Image passed policy check: %s", image)
+		glog.Infof("\n --- DEBUG MESSAGE NAME: --- %s \n", pod.Name)
+		glog.Infof("\n --- DEBUG MESSAGE NAMESPACE: --- %s \n", pod.Namespace)
+		glog.Infof("\n --- DEBUG MESSAGE LABELS: --- %s \n", pod.Labels)
+		glog.Infof("\n --- DEBUG MESSAGE ANNOTATIONS: --- %s \n", pod.Annotations)
+		for _, container := range pod.Spec.Containers {
+			image := container.Image
+			glog.Infof("Checking image: %s", image)
+			if !anchore.CheckImage(image) {
+				status.Result.Status = "Failure"
+				status.Allowed = false
+				if whitelist.CheckWhiteList(pod.Labels, pod.Name) {
+					status.Result.Status = "Success"
+					status.Allowed = true
+					glog.Infof("Whitelisted release in case of pod: %s: ", pod.Name)
 				}
+				message := fmt.Sprintf("Image failed policy check: %s", image)
+				status.Result.Message = message
+				glog.Warning(message)
+				glog.Infof("\n --- STATUS ---: %s\n", status)
+				return status
+			} else {
+				glog.Infof("Image passed policy check: %s", image)
 			}
-		} else {
-			glog.Info("Whitelisted image name, policy check skipped: " + pod.Name)
 		}
 	}
+	glog.Infof("\n --- STATUS ---: %s\n", status)
 	glog.Flush()
 	return status
 }

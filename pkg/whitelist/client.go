@@ -38,15 +38,23 @@ func getWhiteList() ([]v1alpha1.WhiteList, error) {
 	return result.Items, err
 }
 
-func CheckWhiteList(s string) bool {
+func CheckWhiteList(l map[string]string, s string) bool {
 	wl, err := getWhiteList()
 	if err != nil {
 		glog.Errorf("Reading whitelists failed: %s ", err)
 	}
-
-	for _, res := range wl {
-		if strings.Contains(s, res.Spec.ReleaseName) {
-			return true
+	release := l["release"]
+	if release != "" {
+		for _, res := range wl {
+			if release == res.Spec.ReleaseName {
+				return true
+			}
+		}
+	} else {
+		for _, res := range wl {
+			if strings.Contains(s, res.Spec.ReleaseName) {
+				return true
+			}
 		}
 	}
 	return false
