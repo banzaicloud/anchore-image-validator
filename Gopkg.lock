@@ -372,6 +372,14 @@
   revision = "05ee40e3a273f7245e8777337fc7b46e533a9a92"
 
 [[projects]]
+  digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
+
+[[projects]]
   digest = "1:7c7ef7c1bf5eb925d97c670fba41f85f6dce02c334c96c23f74a4dadb208e4a7"
   name = "github.com/spf13/cobra"
   packages = ["."]
@@ -863,6 +871,7 @@
   input-imports = [
     "github.com/golang/glog",
     "github.com/openshift/generic-admission-server/pkg/cmd",
+    "github.com/sirupsen/logrus",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
@@ -872,7 +881,6 @@
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/rest",
-    "k8s.io/client-go/tools/clientcmd",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
