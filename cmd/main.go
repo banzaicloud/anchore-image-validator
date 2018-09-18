@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"github.com/sirupsen/logrus"
 	"github.com/openshift/generic-admission-server/pkg/cmd"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
@@ -17,6 +18,8 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
 	"github.com/banzaicloud/anchore-image-validator/pkg/whitelist"
 )
+
+var log logrus.New()
 
 type admissionHook struct {
 	reservationClient dynamic.ResourceInterface
