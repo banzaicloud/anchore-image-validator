@@ -49,6 +49,10 @@
   name = "k8s.io/client-go"
   version = "kubernetes-1.11.0"
 
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.6"
+
 [prune]
   go-tests = true
   unused-packages = true

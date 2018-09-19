@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
 	"github.com/openshift/generic-admission-server/pkg/cmd"
+	"github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,20 +25,12 @@ type admissionHook struct {
 }
 
 func main() {
-	result, err := whitelist.GetWhiteList()
-	if err != nil {
-		panic(err)
-	}
-	for _, res := range result {
-		fmt.Println(res)
-	}
-
 	cmd.RunAdmissionServer(&admissionHook{})
 }
 
 func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "poke.admission.anchore.io",
+			Group:    "admission.anchore.io",
 			Version:  "v1beta1",
 			Resource: "imagechecks",
 		},
@@ -54,23 +46,43 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 	if admissionSpec.Kind.Kind == "Pod" {
 		pod := v1.Pod{}
 		json.Unmarshal(admissionSpec.Object.Raw, &pod)
+		logrus.WithFields(logrus.Fields{
+			"PodName":    pod.Name,
+			"NameSpace":  pod.Namespace,
+			"Labels":     pod.Labels,
+			"Anotations": pod.Annotations,
+		}).Debug("Pod details")
 		for _, container := range pod.Spec.Containers {
 			image := container.Image
-			glog.Info("Checking image: " + image)
+			logrus.WithFields(logrus.Fields{
+				"image": image,
+			}).Info("Checking image")
 			if !anchore.CheckImage(image) {
 				status.Result.Status = "Failure"
 				status.Allowed = false
+				if whitelist.CheckWhiteList(pod.Labels, pod.Name) {
+					status.Result.Status = "Success"
+					status.Allowed = true
+					logrus.WithFields(logrus.Fields{
+						"PodName": pod.Name,
+					}).Info("Whitelisted release")
+				}
 				message := fmt.Sprintf("Image failed policy check: %s", image)
 				status.Result.Message = message
-				glog.Warning(message)
+				logrus.WithFields(logrus.Fields{
+					"image": image,
+				}).Warning("Image failed policy check")
 				return status
 			} else {
-				glog.Info("Image passed policy check: " + image)
-				glog.Info("aaaaaaaa" + pod.Name)
+				logrus.WithFields(logrus.Fields{
+					"image": image,
+				}).Info("Image passed policy check")
 			}
 		}
-
 	}
+	logrus.WithFields(logrus.Fields{
+		"Status": status,
+	}).Debug("Security scan status")
 	return status
 }
 
