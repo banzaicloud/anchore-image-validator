@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 func anchoreRequest(path string, bodyParams map[string]string, method string) ([]byte, error) {
@@ -21,17 +22,22 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	bodyParamJson, err := json.Marshal(bodyParams)
 	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(bodyParamJson))
 	if err != nil {
-		glog.Fatal(err)
+		logrus.Fatal(err)
 	}
 	req.SetBasicAuth(username, password)
-	glog.Infof("Sending request to %s, with params %s", fullURL, bodyParams)
+	logrus.WithFields(logrus.Fields{
+		"url":        fullURL,
+		"bodyParams": bodyParams,
+	}).Info("Sending request")
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to complete request to Anchore: %v", err)
 	}
 	bodyText, err := ioutil.ReadAll(resp.Body)
-	glog.Info("Anchore Response Body: " + string(bodyText))
+	logrus.WithFields(logrus.Fields{
+		"response": string(bodyText),
+	}).Info("Anchore Response Body")
 	if err != nil {
 		return nil, fmt.Errorf("failed to complete request to Anchore: %v", err)
 	}
@@ -45,23 +51,21 @@ func getStatus(digest string, tag string) bool {
 	path := fmt.Sprintf("/v1/images/%s/check?history=false&detail=false&tag=%s", digest, tag)
 	body, err := anchoreRequest(path, nil, "GET")
 	if err != nil {
-		glog.Error(err)
+		logrus.Error(err)
 		return false
 	}
 	var result []map[string]map[string][]SHAResult
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		glog.Error(err)
+		logrus.Error(err)
 		return false
 	}
 
-	// Is this the easiest way to get this info?
 	resultIndex := fmt.Sprintf("docker.io/%s:latest", tag)
 	return result[0][digest][resultIndex][0].Status == "pass"
 }
 
 func getImage(imageRef string) (Image, error) {
-	// Tag or repo??
 	params := map[string]string{"tag": imageRef}
 	body, err := anchoreRequest("/v1/images?history=false", params, "GET")
 	if err != nil {
@@ -89,7 +93,9 @@ func AddImage(image string) error {
 	if err != nil {
 		return err
 	}
-	glog.Infof("Added image to Anchore Engine: %s", image)
+	logrus.WithFields(logrus.Fields{
+		"Image": image,
+	}).Info("Added image to Anchore Engine")
 	return nil
 }
 
