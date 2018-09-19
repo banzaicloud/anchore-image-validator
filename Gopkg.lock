@@ -869,7 +869,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/golang/glog",
     "github.com/openshift/generic-admission-server/pkg/cmd",
     "github.com/sirupsen/logrus",
     "k8s.io/api/admission/v1beta1",

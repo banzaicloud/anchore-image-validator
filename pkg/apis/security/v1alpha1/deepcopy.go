@@ -30,6 +30,38 @@ func (in *WhiteListList) DeepCopyObject() runtime.Object {
 			in.Items[i].DeepCopyInto(&out.Items[i])
 		}
 	}
+	return &out
+}
 
+func (in *Audit) DeepCopyInto(out *Audit) {
+	out.TypeMeta = in.TypeMeta
+	out.ObjectMeta = in.ObjectMeta
+	out.Spec = AuditSpec{
+		ReleaseName: in.Spec.ReleaseName,
+		Resource:    in.Spec.Resource,
+		Image:       in.Spec.Image,
+		Result:      in.Spec.Result,
+		Action:      in.Spec.Action,
+	}
+}
+
+func (in *Audit) DeepCopyObject() runtime.Object {
+	out := Audit{}
+	in.DeepCopyInto(&out)
+
+	return &out
+}
+
+func (in *AuditList) DeepCopyObject() runtime.Object {
+	out := AuditList{}
+	out.TypeMeta = in.TypeMeta
+	out.ListMeta = in.ListMeta
+
+	if in.Items != nil {
+		out.Items = make([]Audit, len(in.Items))
+		for i := range in.Items {
+			in.Items[i].DeepCopyInto(&out.Items[i])
+		}
+	}
 	return &out
 }
