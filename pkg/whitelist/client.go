@@ -3,7 +3,7 @@ package whitelist
 import (
 	"strings"
 
-	"github.com/golang/glog"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -16,7 +16,7 @@ func getWhiteList() ([]v1alpha1.WhiteList, error) {
 	var config *rest.Config
 	var err error
 
-	glog.Info("using in-cluster configuration")
+	logrus.Info("using in-cluster configuration")
 	config, err = rest.InClusterConfig()
 
 	v1alpha1.AddToScheme(scheme.Scheme)
@@ -29,7 +29,7 @@ func getWhiteList() ([]v1alpha1.WhiteList, error) {
 
 	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
 	if err != nil {
-		glog.Error(err)
+		logrus.Error(err)
 	}
 
 	result := v1alpha1.WhiteListList{}
@@ -41,18 +41,27 @@ func getWhiteList() ([]v1alpha1.WhiteList, error) {
 func CheckWhiteList(l map[string]string, s string) bool {
 	wl, err := getWhiteList()
 	if err != nil {
-		glog.Errorf("Reading whitelists failed: %s ", err)
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Reading whitelists failed")
 	}
 	release := l["release"]
 	if release != "" {
+		logrus.WithFields(logrus.Fields{
+			"release": release,
+		}).Info("Check whitelist")
 		for _, res := range wl {
 			if release == res.Spec.ReleaseName {
 				return true
 			}
 		}
 	} else {
+		logrus.WithFields(logrus.Fields{
+			"PodName": s,
+		}).Info("Missing release label, using PodName")
 		for _, res := range wl {
-			if strings.Contains(s, res.Spec.ReleaseName) {
+			fakeRelease := string(res.Spec.ReleaseName + "-")
+			if strings.Contains(s, fakeRelease) {
 				return true
 			}
 		}
