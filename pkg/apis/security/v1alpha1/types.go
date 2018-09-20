@@ -33,13 +33,18 @@ type Audit struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec AuditSpec `json:"spec"`
+	Spec   AuditSpec   `json:"spec"`
+	Status AuditStatus `json:"status,omitempty"`
 }
 
 type AuditSpec struct {
-	ReleaseName string `json:"releaseName"`
-	Resource    string `json:"resource"`
-	Image       string `json:"image"`
-	Result      string `json:"result"`
-	Action      string `json:"action"`
+	ReleaseName string   `json:"releaseName"`
+	Resource    string   `json:"resource"`
+	Image       []string `json:"image"`
+	Result      string   `json:"result"`
+	Action      string   `json:"action"`
+}
+
+type AuditStatus struct {
+	State string `json:"state"`
 }

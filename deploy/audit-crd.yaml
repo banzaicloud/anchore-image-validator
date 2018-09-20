@@ -26,8 +26,14 @@ spec:
             resource:
               type: string
             image:
-              type: string
+              type: array
+              items:
+                type: string
             result:
               type: string
             action:
+              type: string
+        status:
+          properties:
+            state:
               type: string
