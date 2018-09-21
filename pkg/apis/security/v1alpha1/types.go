@@ -40,9 +40,9 @@ type Audit struct {
 type AuditSpec struct {
 	ReleaseName string   `json:"releaseName"`
 	Resource    string   `json:"resource"`
-	Image       []string `json:"image"`
-	Result      string   `json:"result"`
+	Result      []string `json:"result"`
 	Action      string   `json:"action"`
+	Image       []string `json:"image"`
 }
 
 type AuditStatus struct {

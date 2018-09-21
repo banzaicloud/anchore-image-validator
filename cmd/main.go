@@ -32,6 +32,7 @@ type admissionHook struct {
 func main() {
 	var config *rest.Config
 	var err error
+
 	config, err = rest.InClusterConfig()
 	if err != nil {
 		logrus.Error(err)
@@ -68,7 +69,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"whitelists": whitelists.Items,
-			}).Info("Whitelists found")
+			}).Debug("Whitelists found")
 		}
 		pod := v1.Pod{}
 		json.Unmarshal(admissionSpec.Object.Raw, &pod)
@@ -79,107 +80,74 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			"Anotations": pod.Annotations,
 		}).Debug("Pod details")
 
-		createAudit()
-
+		var i []string
+		var result []string
+		var message string
+		r, f := getReleaseName(pod.Labels, pod.Name)
 		for _, container := range pod.Spec.Containers {
 			image := container.Image
+			i = append(i, image)
 			logrus.WithFields(logrus.Fields{
 				"image": image,
 			}).Info("Checking image")
 			if !anchore.CheckImage(image) {
 				status.Result.Status = "Failure"
 				status.Allowed = false
-				if checkWhiteList(whitelists.Items, pod.Labels, pod.Name) {
+				if checkWhiteList(whitelists.Items, r, f) {
 					status.Result.Status = "Success"
 					status.Allowed = true
 					logrus.WithFields(logrus.Fields{
 						"PodName": pod.Name,
 					}).Info("Whitelisted release")
 				}
-				message := fmt.Sprintf("Image failed policy check: %s", image)
+				message = fmt.Sprintf("Image failed policy check: %s", image)
 				status.Result.Message = message
 				logrus.WithFields(logrus.Fields{
 					"image": image,
 				}).Warning("Image failed policy check")
-				return status
 			} else {
+				message = fmt.Sprintf("Image passed policy check: %s", image)
 				logrus.WithFields(logrus.Fields{
 					"image": image,
-				}).Info("Image passed policy check")
+				}).Warning("Image passed policy check")
 			}
+			result = append(result, message)
 		}
+
+		fr := "false"
+		if f {
+			fr = "true"
+		}
+		action := "reject"
+		if status.Allowed {
+			action = "allowed"
+		}
+		owners := pod.GetOwnerReferences()
+		var auditName string
+		if len(owners) > 0 {
+			auditName = strings.ToLower(owners[0].Kind) + "-" + strings.ToLower(owners[0].Name)
+		} else {
+			auditName = pod.Name
+		}
+
+		ainfo := auditInfo{
+			name:        auditName,
+			labels:      map[string]string{"fakerelease": fr},
+			releaseName: r,
+			resource:    "Pod",
+			image:       i,
+			result:      result,
+			action:      action,
+			state:       "",
+		}
+		createAudit(ainfo)
+		logrus.WithFields(logrus.Fields{
+			"Status": status,
+		}).Debug("Security scan status")
 	}
-	logrus.WithFields(logrus.Fields{
-		"Status": status,
-	}).Debug("Security scan status")
 	return status
 }
 
 func (a *admissionHook) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
 	return nil
-}
-
-func checkWhiteList(wl []v1alpha1.WhiteList, labels map[string]string, p string) bool {
-	release := labels["release"]
-	if release != "" {
-		logrus.WithFields(logrus.Fields{
-			"release": release,
-		}).Info("Check whitelist")
-		for _, res := range wl {
-			if release == res.Spec.ReleaseName {
-				return true
-			}
-		}
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"PodName": p,
-		}).Info("Missing release label, using PodName")
-		for _, res := range wl {
-			fakeRelease := string(res.Spec.ReleaseName + "-")
-			if strings.Contains(p, fakeRelease) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func createAudit() {
-	auditCR := &v1alpha1.Audit{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Audit",
-			APIVersion: "v1alpha1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "example-audit",
-			Labels:    map[string]string{"mylabel": "test"},
-			Namespace: "default",
-		},
-		Spec: v1alpha1.AuditSpec{
-			ReleaseName: "testrelease",
-			Resource:    "test-resource",
-			Image:       "testnginx",
-			Result:      "testresult",
-			Action:      "testaction",
-		},
-	}
-	audit, err := securityClientSet.Audits("default").Create(auditCR)
-	if err != nil {
-		logrus.Error(err)
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"Audit": audit,
-		}).Info("Created Audits")
-	}
-}
-
-func listAudits() {
-	audits, err := securityClientSet.Audits("default").List(metav1.ListOptions{})
-	if err != nil {
-		logrus.Error(err)
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"Audits": audits,
-		}).Info("Listing Audits")
-	}
 }

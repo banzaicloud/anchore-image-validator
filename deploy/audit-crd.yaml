@@ -30,7 +30,9 @@ spec:
               items:
                 type: string
             result:
-              type: string
+              type: array
+              items:
+                type: string
             action:
               type: string
         status:
