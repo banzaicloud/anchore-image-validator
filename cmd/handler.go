@@ -17,6 +17,7 @@ type auditInfo struct {
 	result      []string
 	action      string
 	state       string
+	owners      []metav1.OwnerReference
 }
 
 func getReleaseName(labels map[string]string, p string) (string, bool) {
@@ -78,6 +79,7 @@ func createAudit(a auditInfo) {
 			State: a.state,
 		},
 	}
+	auditCR.SetOwnerReferences(a.owners)
 	audit, err := securityClientSet.Audits("default").Create(auditCR)
 	if err != nil {
 		logrus.Error(err)

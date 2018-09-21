@@ -139,7 +139,9 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			result:      result,
 			action:      action,
 			state:       "",
+			owners:      owners,
 		}
+
 		createAudit(ainfo)
 		logrus.WithFields(logrus.Fields{
 			"Status": status,
