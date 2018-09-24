@@ -20,6 +20,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&WhiteList{},
 		&WhiteListList{},
+		&AuditList{},
+		&Audit{},
 	)
 
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
