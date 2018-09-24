@@ -21,3 +21,30 @@ type WhiteListSpec struct {
 	Creator     string `json:"creator"`
 	Reason      string `json:"reason"`
 }
+
+type AuditList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	Items []Audit `json:"items"`
+}
+
+type Audit struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   AuditSpec   `json:"spec"`
+	Status AuditStatus `json:"status,omitempty"`
+}
+
+type AuditSpec struct {
+	ReleaseName string   `json:"releaseName"`
+	Resource    string   `json:"resource"`
+	Result      []string `json:"result"`
+	Action      string   `json:"action"`
+	Image       []string `json:"image"`
+}
+
+type AuditStatus struct {
+	State string `json:"state"`
+}
