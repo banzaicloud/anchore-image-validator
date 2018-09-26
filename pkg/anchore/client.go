@@ -20,6 +20,9 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	client := &http.Client{}
 
 	bodyParamJson, err := json.Marshal(bodyParams)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(bodyParamJson))
 	if err != nil {
 		logrus.Fatal(err)
