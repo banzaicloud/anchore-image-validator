@@ -86,7 +86,7 @@ metadata:
 spec:
   releaseName: <helm release name>
   reason: <whitelisting reason>
-  creator: <createor>
+  creator: <creator>
 ```
 
 #### Example audit:
@@ -102,8 +102,8 @@ spec:
   releaseName: <helm release name>
   resource: pod
   image:
-    - <coinatinre image1>
-    - <coinatinre image2>
+    - <container image1>
+    - <container image2>
   result:
     - <image1 scan result>
     - <image2 scan result>
