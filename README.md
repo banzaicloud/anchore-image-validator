@@ -1,12 +1,14 @@
 
 # Anchore Image Validator
 
-This admission-server that is used as a ValidatingWebhook in a k8s cluster. If it's working, kubernetes will send requests to the admission server when a Pod creation is initiated. The server checks the image, which is defined in PodSpec, against configured Anchore-engine API. If the API responds with an error, that the image is not valid according to defined policy, k8s will reject the Pod creation request.
+Anchore Image Validator lets you automatically detect or block security issues just before a Kubernetes pod starts. 
 
-- If an image is not valid, the release will be able to put into whitelist using CRD (whitelists).
-- Every image check results are logged as a sructured format to specified CRD (audits).
+This repository contains an [admission webhook](https://banzaicloud.com/blog/k8s-admission-webhooks/) server that can be configured as a ValidatingWebhook in a k8s cluster. Kubernetes will send requests to the admission server when a Pod creation is initiated. The server checks the image defined in the pod specification using the configured Anchore-engine API. If the result indicates that the image does not comply with the defined policy, k8s will reject the Pod creation request.
 
-### Accessing banzaicloud security via k8s api:
+- If an image is not valid, the release can be added to a *whitelist* resource (CRD) to bypass the blocking.
+- The results of image checks are stored as an *audit* resource (CRD) in a sructured format.
+
+### Accessing banzaicloud security features via k8s api:
 
 ```shell
 $ curl http://<k8s apiserver>/apis/security.banzaicloud.com/v1alpha1
@@ -53,7 +55,7 @@ $ kubectl get audit
 apiVersion: security.banzaicloud.com/v1alpha1
 kind:  WhiteList
 metadata:
-  name: <name of whiltelist>
+  name: <name of whitelist>
 spec:
   releaseName: <helm release name>
   reason: <whitelisting reason>
