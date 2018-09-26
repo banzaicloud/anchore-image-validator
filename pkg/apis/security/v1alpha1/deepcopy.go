@@ -2,7 +2,8 @@ package v1alpha1
 
 import "k8s.io/apimachinery/pkg/runtime"
 
-func (in *WhiteList) DeepCopyInto(out *WhiteList) {
+// DeepCopyInto for WhiteListItem
+func (in *WhiteListItem) DeepCopyInto(out *WhiteListItem) {
 	out.TypeMeta = in.TypeMeta
 	out.ObjectMeta = in.ObjectMeta
 	out.Spec = WhiteListSpec{
@@ -12,20 +13,22 @@ func (in *WhiteList) DeepCopyInto(out *WhiteList) {
 	}
 }
 
-func (in *WhiteList) DeepCopyObject() runtime.Object {
-	out := WhiteList{}
+// DeepCopyObject for WhiteListItem
+func (in *WhiteListItem) DeepCopyObject() runtime.Object {
+	out := WhiteListItem{}
 	in.DeepCopyInto(&out)
 
 	return &out
 }
 
-func (in *WhiteListList) DeepCopyObject() runtime.Object {
-	out := WhiteListList{}
+// DeepCopyObject for WhiteList
+func (in *WhiteList) DeepCopyObject() runtime.Object {
+	out := WhiteList{}
 	out.TypeMeta = in.TypeMeta
 	out.ListMeta = in.ListMeta
 
 	if in.Items != nil {
-		out.Items = make([]WhiteList, len(in.Items))
+		out.Items = make([]WhiteListItem, len(in.Items))
 		for i := range in.Items {
 			in.Items[i].DeepCopyInto(&out.Items[i])
 		}
@@ -33,6 +36,7 @@ func (in *WhiteListList) DeepCopyObject() runtime.Object {
 	return &out
 }
 
+// DeepCopyInto Audit
 func (in *Audit) DeepCopyInto(out *Audit) {
 	out.TypeMeta = in.TypeMeta
 	out.ObjectMeta = in.ObjectMeta
@@ -45,6 +49,7 @@ func (in *Audit) DeepCopyInto(out *Audit) {
 	}
 }
 
+// DeepCopyObject for Audit
 func (in *Audit) DeepCopyObject() runtime.Object {
 	out := Audit{}
 	in.DeepCopyInto(&out)
@@ -52,6 +57,7 @@ func (in *Audit) DeepCopyObject() runtime.Object {
 	return &out
 }
 
+// DeepCopyObject for AuditList
 func (in *AuditList) DeepCopyObject() runtime.Object {
 	out := AuditList{}
 	out.TypeMeta = in.TypeMeta
