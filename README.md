@@ -8,7 +8,34 @@ This repository contains an [admission webhook](https://banzaicloud.com/blog/k8s
 - If an image is not valid, the release can be added to a *whitelist* resource (CRD) to bypass the blocking.
 - The results of image checks are stored as an *audit* resource (CRD) in a sructured format.
 
-### Accessing banzaicloud security features via k8s api:
+## Installing
+
+### Helm install
+
+Install from banzaicloud-stable repository
+
+Add repository
+```
+$ helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+$ helm repo update
+```
+
+Install chart
+```
+$ helm install --set externalAnchore.anchoreHost=<my.anchore.host>  --set externalAnchore.anchoreUser=<username> -set externalAnchore.anchorePass=<password> banzaicloud-stable/anchore-policy-validator
+```
+
+### Manual install
+For manual install you need to define the following environment variables
+
+|           ENV          |       Descripton      |
+|------------------------|-----------------------|
+|ANCHORE_ENGINE_USERNAME |Anchore-engine username|
+|ANCHORE_ENGINE_PASSWORD |Anchore-engine password|
+|ANCHORE_ENGINE_URL      |Anchore-engine URL     |
+
+
+### Accessing banzaicloud security features via Kubernetes api:
 
 ```shell
 $ curl http://<k8s apiserver>/apis/security.banzaicloud.com/v1alpha1
@@ -62,7 +89,7 @@ spec:
   creator: <createor>
 ```
 
-#### Examle audit:
+#### Example audit:
 
 ```yaml
 apiVersion: security.banzaicloud.com/v1alpha1
@@ -84,11 +111,3 @@ spec:
 status:
   state: <optional>
 ```
-
-### Some environment variables have to be defined:
-
-|           ENV          |       Descripton      |
-|------------------------|-----------------------|
-|ANCHORE_ENGINE_USERNAME |Anchore-engine username|
-|ANCHORE_ENGINE_PASSWORD |Anchore-engine password|
-|ANCHORE_ENGINE_URL      |Anchore-engine URL     |
