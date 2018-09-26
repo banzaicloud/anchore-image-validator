@@ -8,6 +8,7 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
 
+// AuditInterface for audit
 type AuditInterface interface {
 	List(opts metav1.ListOptions) (*v1alpha1.AuditList, error)
 	Get(name string, options metav1.GetOptions) (*v1alpha1.Audit, error)

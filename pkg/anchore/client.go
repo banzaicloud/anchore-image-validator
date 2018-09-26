@@ -20,6 +20,9 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	client := &http.Client{}
 
 	bodyParamJson, err := json.Marshal(bodyParams)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(bodyParamJson))
 	if err != nil {
 		logrus.Fatal(err)
@@ -87,6 +90,7 @@ func getImageDigest(imageRef string) (string, error) {
 	return image.ImageDigest, nil
 }
 
+// AddImage add Image to Anchore
 func AddImage(image string) error {
 	params := map[string]string{"tag": image}
 	_, err := anchoreRequest("/v1/images", params, "POST")
@@ -99,6 +103,7 @@ func AddImage(image string) error {
 	return nil
 }
 
+//CheckImage checking Image with Anchore
 func CheckImage(image string) bool {
 	imageParts := strings.Split(image, ":")
 	tag := "latest"

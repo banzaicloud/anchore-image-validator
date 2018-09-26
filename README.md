@@ -1,4 +1,6 @@
-
+[![Docker Automated build](https://img.shields.io/docker/automated/banzaicloud/anchore-image-validator.svg)](https://hub.docker.com/r/banzaicloud/anchore-image-validator/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/banzaicloud/anchore-image-validator)](https://goreportcard.com/report/github.com/banzaicloud/anchore-image-validator)
+![license](http://img.shields.io/badge/license-Apache%20v2-orange.svg)
 # Anchore Image Validator
 
 Anchore Image Validator lets you automatically detect or block security issues just before a Kubernetes pod starts. 

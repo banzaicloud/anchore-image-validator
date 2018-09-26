@@ -8,9 +8,10 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
 
+// WhiteListInterface for whitelist
 type WhiteListInterface interface {
-	List(opts metav1.ListOptions) (*v1alpha1.WhiteListList, error)
-	Get(name string, options metav1.GetOptions) (*v1alpha1.WhiteList, error)
+	List(opts metav1.ListOptions) (*v1alpha1.WhiteList, error)
+	Get(name string, options metav1.GetOptions) (*v1alpha1.WhiteListItem, error)
 }
 
 type whitelistClient struct {
@@ -18,8 +19,8 @@ type whitelistClient struct {
 	ns         string
 }
 
-func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteListList, error) {
-	result := v1alpha1.WhiteListList{}
+func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteList, error) {
+	result := v1alpha1.WhiteList{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
@@ -31,8 +32,8 @@ func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteListList
 	return &result, err
 }
 
-func (c *whitelistClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.WhiteList, error) {
-	result := v1alpha1.WhiteList{}
+func (c *whitelistClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.WhiteListItem, error) {
+	result := v1alpha1.WhiteListItem{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).

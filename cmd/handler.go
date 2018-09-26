@@ -34,7 +34,7 @@ func getReleaseName(labels map[string]string, p string) (string, bool) {
 	return p, true
 }
 
-func checkWhiteList(wl []v1alpha1.WhiteList, r string, f bool) bool {
+func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 	if f {
 		logrus.WithFields(logrus.Fields{
 			"FakeRelease": true,
