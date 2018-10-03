@@ -12,6 +12,8 @@ import (
 type WhiteListInterface interface {
 	List(opts metav1.ListOptions) (*v1alpha1.WhiteList, error)
 	Get(name string, options metav1.GetOptions) (*v1alpha1.WhiteListItem, error)
+	Create(*v1alpha1.WhiteListItem) (*v1alpha1.WhiteListItem, error)
+	Delete(name string, options *metav1.DeleteOptions) error
 }
 
 type whitelistClient struct {
@@ -44,4 +46,29 @@ func (c *whitelistClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.Wh
 		Into(&result)
 
 	return &result, err
+}
+
+func (c *whitelistClient) Create(whiteListItem *v1alpha1.WhiteListItem) (*v1alpha1.WhiteListItem, error) {
+	result := v1alpha1.WhiteListItem{}
+	err := c.restClient.
+		Post().
+		Namespace(c.ns).
+		Resource("whitelists").
+		Body(whiteListItem).
+		Do().
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *whitelistClient) Delete(name string, options *metav1.DeleteOptions) error {
+
+	return c.restClient.
+		Delete().
+		Namespace(c.ns).
+		Resource("whitelists").
+		Name(name).
+		Body(options).
+		Do().
+		Error()
 }
