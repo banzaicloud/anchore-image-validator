@@ -10,7 +10,7 @@ import (
 
 // WhiteListInterface for whitelist
 type WhiteListInterface interface {
-	List(opts metav1.ListOptions) (*v1alpha1.WhiteList, error)
+	List(opts metav1.ListOptions) (*v1alpha1.WhiteListItemList, error)
 	Get(name string, options metav1.GetOptions) (*v1alpha1.WhiteListItem, error)
 	Create(*v1alpha1.WhiteListItem) (*v1alpha1.WhiteListItem, error)
 	Delete(name string, options *metav1.DeleteOptions) error
@@ -21,12 +21,12 @@ type whitelistClient struct {
 	ns         string
 }
 
-func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteList, error) {
-	result := v1alpha1.WhiteList{}
+func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteListItemList, error) {
+	result := v1alpha1.WhiteListItemList{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("whitelists").
+		Resource("whitelistitems").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(&result)
@@ -39,7 +39,7 @@ func (c *whitelistClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.Wh
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("whitelists").
+		Resource("whitelistitems").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
@@ -53,7 +53,7 @@ func (c *whitelistClient) Create(whiteListItem *v1alpha1.WhiteListItem) (*v1alph
 	err := c.restClient.
 		Post().
 		Namespace(c.ns).
-		Resource("whitelists").
+		Resource("whitelistitems").
 		Body(whiteListItem).
 		Do().
 		Into(&result)
@@ -66,7 +66,7 @@ func (c *whitelistClient) Delete(name string, options *metav1.DeleteOptions) err
 	return c.restClient.
 		Delete().
 		Namespace(c.ns).
-		Resource("whitelists").
+		Resource("whitelistitems").
 		Name(name).
 		Body(options).
 		Do().
