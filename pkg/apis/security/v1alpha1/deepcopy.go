@@ -22,8 +22,8 @@ func (in *WhiteListItem) DeepCopyObject() runtime.Object {
 }
 
 // DeepCopyObject for WhiteList
-func (in *WhiteList) DeepCopyObject() runtime.Object {
-	out := WhiteList{}
+func (in *WhiteListItemList) DeepCopyObject() runtime.Object {
+	out := WhiteListItemList{}
 	out.TypeMeta = in.TypeMeta
 	out.ListMeta = in.ListMeta
 
