@@ -24,7 +24,7 @@ $ helm repo update
 
 Install chart
 ```
-$ helm install --set externalAnchore.anchoreHost=<my.anchore.host>  --set externalAnchore.anchoreUser=<username> -set externalAnchore.anchorePass=<password> banzaicloud-stable/anchore-policy-validator
+$ helm install --set externalAnchore.anchoreHost=<my.anchore.host>  --set externalAnchore.anchoreUser=<username> --set externalAnchore.anchorePass=<password> banzaicloud-stable/anchore-policy-validator
 ```
 
 ### Manual install
@@ -50,10 +50,10 @@ $ curl http://<k8s apiserver>/apis/security.banzaicloud.com/v1alpha1
   "groupVersion": "security.banzaicloud.com/v1alpha1",
   "resources": [
     {
-      "name": "whitelists",
-      "singularName": "whitelist",
+      "name": "whitelistitems",
+      "singularName": "whitelistitem",
       "namespaced": false,
-      "kind": "WhiteList",
+      "kind": "WhiteListItem",
       "verbs": [ ... ],
       "shortNames": [
         "wl"
@@ -82,7 +82,7 @@ $ kubectl get audit
 
 ```yaml
 apiVersion: security.banzaicloud.com/v1alpha1
-kind:  WhiteList
+kind:  WhiteListItem
 metadata:
   name: <name of whitelist>
 spec:
