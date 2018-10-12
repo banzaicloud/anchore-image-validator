@@ -27,3 +27,16 @@ spec:
               type: string
             creator:
               type: string
+  additionalPrinterColumns:
+  - name: ReleaseName
+    type: string
+    JSONPath: .spec.releaseName
+    priority: 1
+  - name: Reason
+    type: string
+    JSONPath: .spec.readson
+    priority: 2
+  - name: Creator
+    type: string
+    JSONPath: .spec.creator
+    priority: 3
