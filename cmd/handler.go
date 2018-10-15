@@ -40,7 +40,7 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 			"FakeRelease": true,
 		}).Info("Missing release label, using PodName")
 		for _, res := range wl {
-			fakeRelease := string(res.Spec.ReleaseName + "-")
+			fakeRelease := string(res.ObjectMeta.Name + "-")
 			if strings.Contains(r, fakeRelease) {
 				return true
 			}
@@ -50,7 +50,7 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 			"release": r,
 		}).Info("Check whitelist")
 		for _, res := range wl {
-			if r == res.Spec.ReleaseName {
+			if r == res.ObjectMeta.Name {
 				return true
 			}
 		}

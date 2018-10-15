@@ -2,7 +2,7 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-// WhiteList for whitelisting crd
+// WhiteListItemList for whitelisting crd
 type WhiteListItemList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -20,9 +20,8 @@ type WhiteListItem struct {
 
 // WhiteListSpec for WhiteListItem
 type WhiteListSpec struct {
-	ReleaseName string `json:"releaseName"`
-	Creator     string `json:"creator"`
-	Reason      string `json:"reason"`
+	Creator string `json:"creator"`
+	Reason  string `json:"reason"`
 }
 
 // AuditList for Scan events

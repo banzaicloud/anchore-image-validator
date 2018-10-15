@@ -7,9 +7,8 @@ func (in *WhiteListItem) DeepCopyInto(out *WhiteListItem) {
 	out.TypeMeta = in.TypeMeta
 	out.ObjectMeta = in.ObjectMeta
 	out.Spec = WhiteListSpec{
-		ReleaseName: in.Spec.ReleaseName,
-		Creator:     in.Spec.Creator,
-		Reason:      in.Spec.Reason,
+		Creator: in.Spec.Creator,
+		Reason:  in.Spec.Reason,
 	}
 }
 
