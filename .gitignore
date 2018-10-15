@@ -1,7 +1,8 @@
 _state*
 .DS_Store
-bin/*
 anchore-image-validator
+/bin/
+/build/
 /vendor/
 
 # IDE integration
