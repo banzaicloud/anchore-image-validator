@@ -1,0 +1,22 @@
+linters:
+    enable-all: true
+    disable:
+        - maligned
+
+        # TODO: fix these issues
+        - errcheck
+        - unconvert
+        - structcheck
+        - deadcode
+        - gofmt
+        - golint
+        - megacheck
+        - goimports
+
+linters-settings:
+    golint:
+        min-confidence: 0.1
+
+issues:
+    exclude:
+        - G104 # TODO: fix error check issues
