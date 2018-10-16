@@ -16,10 +16,13 @@ RUN BUILD_DIR=/tmp make build-release
 
 FROM alpine:3.7
 
+RUN apk add --update libcap && rm -rf /var/cache/apk/*
+
 COPY --from=builder /tmp/anchore-image-validator /usr/local/bin/anchore-image-validator
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 RUN adduser -D anchore-image-validator
+RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/anchore-image-validator
 USER anchore-image-validator
 
 ENTRYPOINT ["/usr/local/bin/anchore-image-validator"]
