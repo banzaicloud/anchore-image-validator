@@ -527,7 +527,7 @@
   version = "v2.2.1"
 
 [[projects]]
-  digest = "1:728c0c37966b7a6c8980fab69a3d690cc0996e206804a55052318858d00f1e17"
+  digest = "1:13f16734c26d843bc2accbc21dd49be71de99ad5fa0176726cdada80cc6859cb"
   name = "k8s.io/api"
   packages = [
     "admission/v1beta1",
@@ -562,11 +562,11 @@
     "storage/v1beta1",
   ]
   pruneopts = "UT"
-  revision = "2d6f90ab1293a1fb871cf149423ebb72aa7423aa"
-  version = "kubernetes-1.11.1"
+  revision = "4e7be11eab3ffcfc1876898b8272df53785a9504"
+  version = "kubernetes-1.11.3"
 
 [[projects]]
-  digest = "1:c62c694b9145db32cd0d652b2ea1ba18b8a837075334f711cbf5bf3f7c06f1d8"
+  digest = "1:3ac9d135ccf71b822fc64e13180a69a2a7df35c77327f731739619c41e8237a3"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -619,11 +619,11 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "103fd098999dc9c0c88536f5c9ad2e5da39373ae"
-  version = "kubernetes-1.11.1"
+  revision = "def12e63c512da17043b4f0293f52d1006603d9f"
+  version = "kubernetes-1.11.3"
 
 [[projects]]
-  digest = "1:3156d4f2e9a1a113fd51badb9906d62aaf6a72fe6ee1813489453a29154c5412"
+  digest = "1:3d66c1286b541bc8be16799c7d55dc058197f984b3378d712a1f3c9d8323a439"
   name = "k8s.io/apiserver"
   packages = [
     "pkg/admission",
@@ -717,8 +717,8 @@
     "plugin/pkg/authorizer/webhook",
   ]
   pruneopts = "UT"
-  revision = "8b122ec9e3bbab91a262d17a39325e69349dc44d"
-  version = "kubernetes-1.11.1"
+  revision = "386115dd78fde3efc2366cb381420a4dd0157348"
+  version = "kubernetes-1.11.3"
 
 [[projects]]
   digest = "1:e95f2e3e6638b9c98f1ddcbccb21c6f59ddd2a0ce33509d9422df0c8eaf20e9d"

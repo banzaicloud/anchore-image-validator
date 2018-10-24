@@ -29,15 +29,15 @@
   name = "github.com/openshift/generic-admission-server"
 
 [[constraint]]
-  version = "kubernetes-1.11.1"
+  version = "kubernetes-1.11.3"
   name = "k8s.io/api"
 
 [[constraint]]
-  version = "kubernetes-1.11.1"
+  version = "kubernetes-1.11.3"
   name = "k8s.io/apimachinery"
 
 [[override]]
-  version = "kubernetes-1.11.1"
+  version = "kubernetes-1.11.3"
   name = "k8s.io/apiserver"
 
 [[constraint]]
