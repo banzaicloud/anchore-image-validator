@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
@@ -72,7 +73,7 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 	return false
 }
 
-func createAudit(a auditInfo) {
+func createOrUpdateAudit(a auditInfo) {
 	auditCR := &v1alpha1.Audit{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Audit",
@@ -93,14 +94,30 @@ func createAudit(a auditInfo) {
 			State: a.state,
 		},
 	}
+	actionByte := []byte(`{"spec":`)
+	aSpec, er := json.Marshal(auditCR.Spec)
+	if er != nil {
+		logrus.Error(er)
+	}
+	actionByte = append(actionByte, aSpec...)
+	tail := []byte(`}`)
+	actionByte = append(actionByte, tail...)
 	auditCR.SetOwnerReferences(a.owners)
 	audit, err := securityClientSet.Audits("default").Create(auditCR)
 	if err != nil {
 		logrus.Error(err)
+		audit, err = securityClientSet.Audits("default").Update(a.name, actionByte)
+		if err != nil {
+			logrus.Error(err)
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"Audit": audit,
+			}).Debug("Update Audit")
+		}
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"Audit": audit,
-		}).Debug("Created Audits")
+		}).Debug("Created Audit")
 	}
 }
 

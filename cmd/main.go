@@ -156,7 +156,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			owners:      owners,
 		}
 
-		createAudit(ainfo)
+		createOrUpdateAudit(ainfo)
 		logrus.WithFields(logrus.Fields{
 			"Status": status,
 		}).Debug("Security scan status")
