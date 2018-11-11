@@ -118,7 +118,7 @@ func AddImage(image string) error {
 }
 
 //CheckImage checking Image with Anchore
-func CheckImage(image string) bool {
+func CheckImage(image string) (string, string, string, bool) {
 	imageParts := strings.Split(image, ":")
 	tag := "latest"
 	if len(imageParts) > 1 {
@@ -127,7 +127,7 @@ func CheckImage(image string) bool {
 	digest, err := getImageDigest(image)
 	if err != nil {
 		AddImage(image)
-		return false
+		return "", "", "", false
 	}
-	return getStatus(digest, tag)
+	return imageParts[0], tag, digest, getStatus(digest, tag)
 }

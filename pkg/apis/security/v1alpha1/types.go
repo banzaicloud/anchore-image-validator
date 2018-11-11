@@ -57,11 +57,18 @@ type Audit struct {
 
 // AuditSpec for Audit
 type AuditSpec struct {
-	ReleaseName string   `json:"releaseName"`
-	Resource    string   `json:"resource"`
-	Result      []string `json:"result"`
-	Action      string   `json:"action"`
-	Image       []string `json:"image"`
+	ReleaseName string       `json:"releaseName"`
+	Resource    string       `json:"resource"`
+	Result      []string     `json:"result"`
+	Action      string       `json:"action"`
+	Images      []AuditImage `json:"image"`
+}
+
+// AuditImage for AuditSpec
+type AuditImage struct {
+	ImageName   string `json:"imageName"`
+	ImageTag    string `json:"imageTag"`
+	ImageDigest string `json:"imageDigest"`
 }
 
 // AuditStatus for AuditSpec

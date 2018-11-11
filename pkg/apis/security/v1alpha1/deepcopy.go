@@ -56,7 +56,7 @@ func (in *Audit) DeepCopyInto(out *Audit) {
 	out.Spec = AuditSpec{
 		ReleaseName: in.Spec.ReleaseName,
 		Resource:    in.Spec.Resource,
-		Image:       in.Spec.Image,
+		Images:      in.Spec.Images,
 		Result:      in.Spec.Result,
 		Action:      in.Spec.Action,
 	}

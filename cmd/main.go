@@ -94,17 +94,17 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			"Anotations": pod.Annotations,
 		}).Debug("Pod details")
 
-		var i []string
 		var result []string
 		var message string
+		var auditImages []v1alpha1.AuditImage
 		r, f := getReleaseName(pod.Labels, pod.Name)
 		for _, container := range pod.Spec.Containers {
 			image := container.Image
-			i = append(i, image)
 			logrus.WithFields(logrus.Fields{
 				"image": image,
 			}).Info("Checking image")
-			if !anchore.CheckImage(image) {
+			imageName, imageTag, imageDigest, ok := anchore.CheckImage(image)
+			if !ok {
 				status.Result.Status = "Failure"
 				status.Allowed = false
 				if checkWhiteList(whitelists.Items, r, f) {
@@ -126,6 +126,13 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 				}).Warning("Image passed policy check")
 			}
 			result = append(result, message)
+
+			auditImage := v1alpha1.AuditImage{
+				ImageName:   imageName,
+				ImageTag:    imageTag,
+				ImageDigest: imageDigest,
+			}
+			auditImages = append(auditImages, auditImage)
 		}
 
 		fr := "false"
@@ -149,7 +156,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			labels:      map[string]string{"fakerelease": fr},
 			releaseName: r,
 			resource:    "Pod",
-			image:       i,
+			images:      auditImages,
 			result:      result,
 			action:      action,
 			state:       "",
