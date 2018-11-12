@@ -28,7 +28,7 @@ type auditInfo struct {
 	labels      map[string]string
 	releaseName string
 	resource    string
-	image       []string
+	images      []v1alpha1.AuditImage
 	result      []string
 	action      string
 	state       string
@@ -86,7 +86,7 @@ func createOrUpdateAudit(a auditInfo) {
 		Spec: v1alpha1.AuditSpec{
 			ReleaseName: a.releaseName,
 			Resource:    a.resource,
-			Image:       a.image,
+			Images:      a.images,
 			Result:      a.result,
 			Action:      a.action,
 		},

@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -93,7 +94,6 @@ func getImage(imageRef string) (Image, error) {
 	if err != nil {
 		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %v", err)
 	}
-
 	return images[0], nil
 }
 func getImageDigest(imageRef string) (string, error) {
@@ -118,7 +118,7 @@ func AddImage(image string) error {
 }
 
 //CheckImage checking Image with Anchore
-func CheckImage(image string) bool {
+func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 	imageParts := strings.Split(image, ":")
 	tag := "latest"
 	if len(imageParts) > 1 {
@@ -127,7 +127,30 @@ func CheckImage(image string) bool {
 	digest, err := getImageDigest(image)
 	if err != nil {
 		AddImage(image)
-		return false
+		return v1alpha1.AuditImage{}, false
 	}
-	return getStatus(digest, tag)
+	lastUpdated := getImageLastUpdate(digest)
+	auditImage := v1alpha1.AuditImage{
+		ImageName:   imageParts[0],
+		ImageTag:    tag,
+		ImageDigest: digest,
+		LastUpdated: lastUpdated,
+	}
+	return auditImage, getStatus(digest, tag)
+}
+
+func getImageLastUpdate(digest string) string {
+	path := fmt.Sprintf("/v1/images/%s?history=false&detail=false", digest)
+	body, err := anchoreRequest(path, nil, "GET")
+	if err != nil {
+		logrus.Error(err)
+		return ""
+	}
+	var images []Image
+	err = json.Unmarshal(body, &images)
+	if err != nil {
+		logrus.Error(err)
+		return ""
+	}
+	return images[0].LastUpdated
 }

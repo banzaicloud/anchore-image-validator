@@ -24,6 +24,7 @@ type Check struct {
 // Image type for Anchore image
 type Image struct {
 	ImageDigest string `json:"imageDigest"`
+	LastUpdated string `json:"last_updated"`
 }
 
 // SHAResult type for Anchore result
