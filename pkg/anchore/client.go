@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -117,7 +118,7 @@ func AddImage(image string) error {
 }
 
 //CheckImage checking Image with Anchore
-func CheckImage(image string) (string, string, string, string, bool) {
+func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 	imageParts := strings.Split(image, ":")
 	tag := "latest"
 	if len(imageParts) > 1 {
@@ -126,10 +127,16 @@ func CheckImage(image string) (string, string, string, string, bool) {
 	digest, err := getImageDigest(image)
 	if err != nil {
 		AddImage(image)
-		return "", "", "", "", false
+		return v1alpha1.AuditImage{}, false
 	}
 	lastUpdated := getImageLastUpdate(digest)
-	return imageParts[0], tag, digest, lastUpdated, getStatus(digest, tag)
+	auditImage := v1alpha1.AuditImage{
+		ImageName:   imageParts[0],
+		ImageTag:    tag,
+		ImageDigest: digest,
+		LastUpdated: lastUpdated,
+	}
+	return auditImage, getStatus(digest, tag)
 }
 
 func getImageLastUpdate(digest string) string {
