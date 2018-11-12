@@ -69,6 +69,7 @@ type AuditImage struct {
 	ImageName   string `json:"imageName"`
 	ImageTag    string `json:"imageTag"`
 	ImageDigest string `json:"imageDigest"`
+	LastUpdated string `json:"lastUpdated"`
 }
 
 // AuditStatus for AuditSpec

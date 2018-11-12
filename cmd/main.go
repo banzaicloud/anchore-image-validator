@@ -103,7 +103,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 			logrus.WithFields(logrus.Fields{
 				"image": image,
 			}).Info("Checking image")
-			imageName, imageTag, imageDigest, ok := anchore.CheckImage(image)
+			imageName, imageTag, imageDigest, lastUpdated, ok := anchore.CheckImage(image)
 			if !ok {
 				status.Result.Status = "Failure"
 				status.Allowed = false
@@ -131,6 +131,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 				ImageName:   imageName,
 				ImageTag:    imageTag,
 				ImageDigest: imageDigest,
+				LastUpdated: lastUpdated,
 			}
 			auditImages = append(auditImages, auditImage)
 		}
