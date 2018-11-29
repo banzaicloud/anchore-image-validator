@@ -127,7 +127,7 @@ func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 	digest, err := getImageDigest(image)
 	if err != nil {
 		AddImage(image)
-		return v1alpha1.AuditImage{}, false
+		digest, _ = getImageDigest(image)
 	}
 	lastUpdated := getImageLastUpdate(digest)
 	auditImage := v1alpha1.AuditImage{
