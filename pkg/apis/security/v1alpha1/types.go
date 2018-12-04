@@ -36,6 +36,7 @@ type WhiteListItem struct {
 type WhiteListSpec struct {
 	Creator string `json:"creator"`
 	Reason  string `json:"reason"`
+	Regexp  string `json:"regexp,omitempty"`
 }
 
 // AuditList for Scan events

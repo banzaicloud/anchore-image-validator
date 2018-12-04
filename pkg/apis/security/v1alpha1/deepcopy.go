@@ -23,6 +23,7 @@ func (in *WhiteListItem) DeepCopyInto(out *WhiteListItem) {
 	out.Spec = WhiteListSpec{
 		Creator: in.Spec.Creator,
 		Reason:  in.Spec.Reason,
+		Regexp:  in.Spec.Regexp,
 	}
 }
 

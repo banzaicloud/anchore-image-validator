@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
@@ -70,7 +71,23 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 			}
 		}
 	}
+	for _, res := range wl {
+		match := regexpWhiteList(res)
+		if match != nil {
+			if match.MatchString(r) {
+				return true
+			}
+		}
+	}
 	return false
+}
+
+func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
+	if wl.Spec.Regexp != "" {
+		match, _ := regexp.Compile(wl.Spec.Regexp)
+		return match
+	}
+	return nil
 }
 
 func createOrUpdateAudit(a auditInfo) {
