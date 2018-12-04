@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
@@ -50,27 +51,42 @@ func getReleaseName(labels map[string]string, p string) (string, bool) {
 }
 
 func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
-	if f {
-		logrus.WithFields(logrus.Fields{
-			"FakeRelease": true,
-		}).Info("Missing release label, using PodName")
-		for _, res := range wl {
+	for _, res := range wl {
+		if f {
+			logrus.WithFields(logrus.Fields{
+				"FakeRelease": true,
+			}).Info("Missing release label, using PodName")
 			fakeRelease := string(res.ObjectMeta.Name + "-")
 			if strings.Contains(r, fakeRelease) {
 				return true
 			}
 		}
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"release": r,
-		}).Info("Check whitelist")
-		for _, res := range wl {
-			if r == res.ObjectMeta.Name {
+		if r == res.ObjectMeta.Name {
+			return true
+		}
+		match := regexpWhiteList(res)
+		if match != nil {
+			if match.MatchString(r) {
 				return true
 			}
 		}
 	}
+
 	return false
+}
+
+func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
+	if wl.Spec.Regexp != "" {
+		match, err := regexp.Compile(wl.Spec.Regexp)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("regexp compile error")
+			return nil
+		}
+		return match
+	}
+	return nil
 }
 
 func createOrUpdateAudit(a auditInfo) {
