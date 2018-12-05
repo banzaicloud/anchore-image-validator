@@ -77,7 +77,7 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 
 func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
 	if wl.Spec.Regexp != "" {
-		match, err := regexp.Compile(wl.Spec.Regexp)
+		match, err := regexp.Compile("^(" + wl.Spec.Regexp + ")$")
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
