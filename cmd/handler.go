@@ -80,7 +80,8 @@ func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
 		match, err := regexp.Compile("^(" + wl.Spec.Regexp + ")$")
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error": err,
+				"error":      err,
+				"expression": wl.Spec.Regexp,
 			}).Error("regexp compile error")
 			return nil
 		}
