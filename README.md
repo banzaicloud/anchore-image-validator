@@ -84,11 +84,11 @@ $ kubectl get audit
 apiVersion: security.banzaicloud.com/v1alpha1
 kind:  WhiteListItem
 metadata:
-  name: <name of whitelist>
+  name: <name of helm release>
 spec:
-  releaseName: <helm release name>
   reason: <whitelisting reason>
   creator: <creator>
+  [regexp:] <optional>
 ```
 
 #### Example audit:
@@ -104,12 +104,18 @@ spec:
   releaseName: <helm release name>
   resource: pod
   image:
-    - <container image1>
-    - <container image2>
+    - imageName": "docker.io/image-name1",
+      imageTag": "latest",
+      imageDigest": "sha256:abcd1",
+      lastUpdated": "2018-11-11T14:35:38Z"
+    - imageName": "docker.io/image-name2",
+      imageTag": "latest",
+      imageDigest": "sha256:abcd2",
+      lastUpdated": "2018-11-11T14:35:38Z"    
   result:
-    - <image1 scan result>
-    - <image2 scan result>
+    - <docker.io/image-name1 scan result>
+    - <docker.io/image-name1 scan result>
   action: <allow or reject>
 status:
-  state: <optional>
+  [state:] <optional>
 ```
