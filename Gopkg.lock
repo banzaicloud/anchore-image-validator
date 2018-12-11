@@ -216,6 +216,14 @@
   revision = "0c5108395e2debce0d731cf0287ddf7242066aba"
 
 [[projects]]
+  digest = "1:4e0e5d786c35c402574cda1906195d9fbd76a35d2c921eb10199741faf4f0256"
+  name = "github.com/goph/emperror"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b1b4a9b847ebc56299eb729faa942b89e9d8a562"
+  version = "v0.14.0"
+
+[[projects]]
   branch = "master"
   digest = "1:86c1210529e69d69860f2bb3ee9ccce0b595aa3f9165e7dd1388e5c612915888"
   name = "github.com/gregjones/httpcache"
@@ -330,6 +338,14 @@
   pruneopts = "UT"
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   digest = "1:1cec06981f734a2a5927ce17a22b34e9f3fa458b5c70f5db9ed58f7e389338f7"
@@ -721,7 +737,7 @@
   version = "kubernetes-1.11.3"
 
 [[projects]]
-  digest = "1:e95f2e3e6638b9c98f1ddcbccb21c6f59ddd2a0ce33509d9422df0c8eaf20e9d"
+  digest = "1:f74e91a1c142012bb57ef34f9c648e710d19fbd4a25877589a6a329922cd5779"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -849,8 +865,8 @@
     "util/retry",
   ]
   pruneopts = "UT"
-  revision = "7d04d0e2a0a1a4d4a1cd6baa432a2301492e4e65"
-  version = "kubernetes-1.11.0"
+  revision = "2cefa64ff137e128daeddbd1775cd775708a05bf"
+  version = "kubernetes-1.11.3"
 
 [[projects]]
   digest = "1:a8a0fdd623b2a37c433d137bddfab6b155e988efbc7cd68c18f9923dce6c8742"
@@ -869,16 +885,21 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/goph/emperror",
     "github.com/openshift/generic-admission-server/pkg/cmd",
     "github.com/sirupsen/logrus",
     "k8s.io/api/admission/v1beta1",
+    "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/types",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/rest",
   ]
   solver-name = "gps-cdcl"

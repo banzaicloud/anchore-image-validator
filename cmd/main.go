@@ -17,9 +17,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 
+	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
+	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
+	clientV1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 	"github.com/openshift/generic-admission-server/pkg/cmd"
 	"github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -29,10 +33,6 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-
-	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
-	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
-	clientV1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 )
 
 var securityClientSet *clientV1alpha1.SecurityV1Alpha1Client
@@ -42,6 +42,15 @@ type admissionHook struct {
 	lock              sync.RWMutex
 	initialized       bool
 }
+
+const apiServiceResource = "imagechecks"
+
+var (
+	apiServiceGroup     = os.Getenv("ANCHORE_APISERVICE_GROUP")
+	apiServiceVersion   = os.Getenv("ANCHORE_APISERVICE_VERSION")
+	anchoreReleaseName  = os.Getenv("ANCHORE_RELEASE_NAME")
+	kubernetesNameSpace = os.Getenv("KUBERNETES_NAMESPACE")
+)
 
 func main() {
 	var config *rest.Config
@@ -58,14 +67,16 @@ func main() {
 		logrus.Error(err)
 	}
 
+	installValidatingWebhookConfig(config)
+
 	cmd.RunAdmissionServer(&admissionHook{})
 }
 
 func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.anchore.io",
-			Version:  "v1beta1",
-			Resource: "imagechecks",
+			Group:    apiServiceGroup,
+			Version:  apiServiceVersion,
+			Resource: apiServiceResource,
 		},
 		"imagecheck"
 }
