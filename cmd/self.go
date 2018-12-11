@@ -17,9 +17,9 @@ package main
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/goph/emperror"
 	"github.com/sirupsen/logrus"
@@ -33,8 +33,7 @@ import (
 func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.ValidatingWebhookConfiguration {
 
 	path := path.Join("/apis", apiServiceGroup, apiServiceVersion, apiServiceResource)
-	nameSlice := []string{anchoreReleaseName, apiServiceGroup}
-	webHookName := strings.Join(nameSlice, ".")
+	webHookName := fmt.Sprintf("%s.%s", anchoreReleaseName, apiServiceGroup)
 	ownerref, caBundle, err := getSelf(c)
 	if err != nil {
 		logrus.Error(err)
@@ -101,7 +100,7 @@ func installValidatingWebhookConfig(c *rest.Config) error {
 	}
 	validatingWebhookConfig := createValidatingWebhook(coreClientSet)
 	if validatingWebhookConfig == nil {
-		return emperror.Wrap(err, "cannot create ValidatingWebhooConfiguration")
+		return emperror.Wrap(err, "cannot create ValidatingkWebhooConfiguration")
 	}
 	admissionClientSet, err := admissionClient.NewForConfig(c)
 	if err != nil {
@@ -110,7 +109,7 @@ func installValidatingWebhookConfig(c *rest.Config) error {
 	validatingInt := admissionClientSet.ValidatingWebhookConfigurations()
 	_, err = validatingInt.Create(validatingWebhookConfig)
 	if err != nil {
-		return emperror.WrapWith(err, "cannot install ValidatingWebhookConfiguration", "webhook", validatingWebhookConfig)
+		return emperror.Wrap(err, "cannot install ValidatingWebhookConfiguration")
 	}
 	return nil
 }
@@ -129,7 +128,6 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 		return nil, nil, errors.New("not defined ANCHORE_RELEASE_NAME env")
 	}
 
-	var ownerref []metav1.OwnerReference
 	owner := metav1.OwnerReference{
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -139,10 +137,9 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 
 	secretDetail, err := c.Secrets(kubernetesNameSpace).Get(anchoreReleaseName, metav1.GetOptions{})
 	if err != nil {
-		logrus.Error(err)
+		return nil, nil, emperror.Wrap(err, "unable to get secretDetail")
 	}
 	caBundle := []byte(base64.StdEncoding.EncodeToString(secretDetail.Data["caCert"]))
-	ownerref = append(ownerref, owner)
 
-	return ownerref, caBundle, nil
+	return []metav1.OwnerReference{owner}, caBundle, nil
 }
