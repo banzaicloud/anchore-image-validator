@@ -46,9 +46,9 @@ type admissionHook struct {
 const apiServiceResource = "imagechecks"
 
 var (
-	apiServiceGroup    = os.Getenv("ANCHORE_APISERVICE_GROUP")
-	apiServiceVersion  = os.Getenv("ANCHORE_APISERVICE_VERSION")
-	anchoreReleaseName = os.Getenv("ANCHORE_RELEASE_NAME")
+	apiServiceGroup     = os.Getenv("ANCHORE_APISERVICE_GROUP")
+	apiServiceVersion   = os.Getenv("ANCHORE_APISERVICE_VERSION")
+	anchoreReleaseName  = os.Getenv("ANCHORE_RELEASE_NAME")
 	kubernetesNameSpace = os.Getenv("KUBERNETES_NAMESPACE")
 )
 

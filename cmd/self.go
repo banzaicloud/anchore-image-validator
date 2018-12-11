@@ -19,6 +19,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/goph/emperror"
 	"github.com/sirupsen/logrus"
@@ -31,21 +32,22 @@ import (
 
 func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.ValidatingWebhookConfiguration {
 
-	var nilSlice []string
 	path := path.Join("/apis", apiServiceGroup, apiServiceVersion, apiServiceResource)
+	nameSlice := []string{anchoreReleaseName, apiServiceGroup}
+	webHookName := strings.Join(nameSlice, ".")
 	ownerref, caBundle, err := getSelf(c)
 	if err != nil {
 		logrus.Error(err)
+		return nil
 	}
 	rule := admissionV1beta1.Rule{
-		APIGroups:   append(nilSlice, ""),
-		APIVersions: append(nilSlice, "*"),
-		Resources:   append(nilSlice, "pods"),
+		APIGroups:   []string{""},
+		APIVersions: []string{"*"},
+		Resources:   []string{"pods"},
 	}
 
-	var nilOperationType []admissionV1beta1.OperationType
 	rulesWithOperations := admissionV1beta1.RuleWithOperations{
-		Operations: append(nilOperationType, admissionV1beta1.Create),
+		Operations: []admissionV1beta1.OperationType{admissionV1beta1.Create},
 		Rule:       rule,
 	}
 
@@ -54,17 +56,15 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 	expression := metav1.LabelSelectorRequirement{
 		Key:      "scan",
 		Operator: metav1.LabelSelectorOpNotIn,
-		Values:   append(nilSlice, "noscan"),
+		Values:   []string{"noscan"},
 	}
 
-	var nilExpression []metav1.LabelSelectorRequirement
 	nameSpaceSelector := &metav1.LabelSelector{
-		MatchExpressions: append(nilExpression, expression),
+		MatchExpressions: []metav1.LabelSelectorRequirement{expression},
 	}
 
-	var nilRulesWithOperations []admissionV1beta1.RuleWithOperations
 	validatingWebhook := admissionV1beta1.Webhook{
-		Name: anchoreReleaseName + ".admission.anchore.io",
+		Name: webHookName,
 		ClientConfig: admissionV1beta1.WebhookClientConfig{
 			Service: &admissionV1beta1.ServiceReference{
 				Namespace: "default",
@@ -73,21 +73,20 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 			},
 			CABundle: caBundle,
 		},
-		Rules:             append(nilRulesWithOperations, rulesWithOperations),
+		Rules:             []admissionV1beta1.RuleWithOperations{rulesWithOperations},
 		FailurePolicy:     &failurePolicy,
 		NamespaceSelector: nameSpaceSelector,
 	}
 
-	var nilWebhook []admissionV1beta1.Webhook
 	validatingWebhookConfig := &admissionV1beta1.ValidatingWebhookConfiguration{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ValidatingWebhookConfiguration",
 			APIVersion: "admissionregistration.k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: anchoreReleaseName + ".admission.anchore.io",
+			Name: webHookName,
 		},
-		Webhooks: append(nilWebhook, validatingWebhook),
+		Webhooks: []admissionV1beta1.Webhook{validatingWebhook},
 	}
 
 	validatingWebhookConfig.SetOwnerReferences(ownerref)
@@ -101,6 +100,9 @@ func installValidatingWebhookConfig(c *rest.Config) error {
 		logrus.Error(err)
 	}
 	validatingWebhookConfig := createValidatingWebhook(coreClientSet)
+	if validatingWebhookConfig == nil {
+		return emperror.Wrap(err, "cannot create ValidatingWebhooConfiguration")
+	}
 	admissionClientSet, err := admissionClient.NewForConfig(c)
 	if err != nil {
 		return emperror.Wrap(err, "cannot create admission registration client")
@@ -108,7 +110,7 @@ func installValidatingWebhookConfig(c *rest.Config) error {
 	validatingInt := admissionClientSet.ValidatingWebhookConfigurations()
 	_, err = validatingInt.Create(validatingWebhookConfig)
 	if err != nil {
-		return emperror.WrapWith(err, "cannot create ValidatingWebhookConfiguration", "webhook", validatingWebhookConfig)
+		return emperror.WrapWith(err, "cannot install ValidatingWebhookConfiguration", "webhook", validatingWebhookConfig)
 	}
 	return nil
 }
@@ -134,7 +136,7 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 		Name:       podName,
 		UID:        podDetail.ObjectMeta.UID,
 	}
-	
+
 	secretDetail, err := c.Secrets(kubernetesNameSpace).Get(anchoreReleaseName, metav1.GetOptions{})
 	if err != nil {
 		logrus.Error(err)
