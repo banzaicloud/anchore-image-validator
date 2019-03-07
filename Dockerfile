@@ -21,5 +21,6 @@ RUN apk add --update libcap && rm -rf /var/cache/apk/*
 COPY --from=builder /tmp/anchore-image-validator /usr/local/bin/anchore-image-validator
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
+USER nobody
 
 ENTRYPOINT ["/usr/local/bin/anchore-image-validator"]
