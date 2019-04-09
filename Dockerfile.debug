@@ -1,11 +1,16 @@
-FROM golang:1.11-alpine AS builder
+FROM golang:1.12-alpine AS builder
 
 RUN apk add --update --no-cache ca-certificates git
 
 RUN go get github.com/derekparker/delve/cmd/dlv
 
+RUN mkdir -p /go/src/${PACKAGE}
+WORKDIR /go/src/${PACKAGE}
 
-FROM alpine:3.7
+COPY . /go/src/github.com/banzaicloud/anchore-image-validator
+RUN BUILD_DIR=/tmp make build-release
+
+FROM alpine:3.9
 
 RUN apk add --update --no-cache libc6-compat
 
