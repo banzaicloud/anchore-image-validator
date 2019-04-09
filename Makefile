@@ -21,26 +21,14 @@ endif
 DOCKER_TAG ?= ${VERSION}
 
 # Dependency versions
-DEP_VERSION = 0.5.0
-GOLANGCI_VERSION = 1.10.2
-LICENSEI_VERSION = 0.0.7
+GOLANGCI_VERSION = 1.12.2
+LICENSEI_VERSION = 0.1.0
 
-GOLANG_VERSION = 1.11
+GOLANG_VERSION = 1.12
 
 .PHONY: clean
 clean: ## Clean the working area and the project
 	rm -rf bin/ ${BUILD_DIR}/ vendor/
-
-bin/dep: bin/dep-${DEP_VERSION}
-	@ln -sf dep-${DEP_VERSION} bin/dep
-bin/dep-${DEP_VERSION}:
-	@mkdir -p bin
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | INSTALL_DIRECTORY=bin DEP_RELEASE_TAG=v${DEP_VERSION} sh
-	@mv bin/dep $@
-
-.PHONY: vendor
-vendor: bin/dep ## Install dependencies
-	bin/dep ensure -v -vendor-only
 
 .PHONY: build
 build: GOARGS += -tags "${GOTAGS}" -ldflags "${LDFLAGS}"

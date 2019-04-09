@@ -1,26 +1,22 @@
-FROM golang:1.11-alpine AS builder
+FROM golang:1.12-alpine AS builder
 
 RUN apk add --update --no-cache ca-certificates make git curl mercurial
 
 ARG PACKAGE=github.com/banzaicloud/anchore-image-validator
 
-RUN mkdir -p /go/src/${PACKAGE}
-WORKDIR /go/src/${PACKAGE}
+RUN mkdir -p /build
+WORKDIR /build
 
-COPY Gopkg.* Makefile /go/src/${PACKAGE}/
-RUN make vendor
+COPY go.* /build/
+RUN go mod download
+COPY . /build
+RUN go install ./cmd 
 
-COPY . /go/src/github.com/banzaicloud/anchore-image-validator
-RUN BUILD_DIR=/tmp make build-release
+FROM alpine:3.9
 
-
-FROM alpine:3.7
-
-RUN apk add --update libcap && rm -rf /var/cache/apk/*
-
-COPY --from=builder /tmp/anchore-image-validator /usr/local/bin/anchore-image-validator
+COPY --from=builder /go/bin/cmd /usr/local/bin/anchore-image-validator
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-USER nobody
+USER 65534:65534
 
 ENTRYPOINT ["/usr/local/bin/anchore-image-validator"]
