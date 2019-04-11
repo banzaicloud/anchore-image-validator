@@ -54,9 +54,7 @@ build-debug: BINARY_NAME_SUFFIX += debug
 build-debug: build ## Build a binary with remote debugging capabilities
 
 .PHONY: docker
-docker: export GOOS = linux
-docker: BINARY_NAME_SUFFIX += docker
-docker: build-release ## Build a Docker image
+docker:
 	docker build --build-arg BUILD_DIR=${BUILD_DIR} --build-arg BINARY_NAME=${GENERATED_BINARY_NAME} -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f Dockerfile .
 ifeq (${DOCKER_LATEST}, 1)
 	docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
@@ -80,7 +78,7 @@ bin/licensei-${LICENSEI_VERSION}:
 
 .PHONY: license-check
 license-check: bin/licensei ## Run license check
-	bin/licensei check
+	bin/licensei check cmd
 	./scripts/check-header.sh
 
 .PHONY: license-cache

@@ -4,12 +4,6 @@ RUN apk add --update --no-cache ca-certificates git
 
 RUN go get github.com/derekparker/delve/cmd/dlv
 
-RUN mkdir -p /go/src/${PACKAGE}
-WORKDIR /go/src/${PACKAGE}
-
-COPY . /go/src/github.com/banzaicloud/anchore-image-validator
-RUN BUILD_DIR=/tmp make build-release
-
 FROM alpine:3.9
 
 RUN apk add --update --no-cache libc6-compat
