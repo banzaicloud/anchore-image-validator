@@ -1,8 +1,6 @@
 FROM golang:1.12-alpine AS builder
 
-RUN apk add --update --no-cache ca-certificates make git curl mercurial
-
-ARG PACKAGE=github.com/banzaicloud/anchore-image-validator
+RUN apk add --update --no-cache ca-certificates git
 
 RUN mkdir -p /build
 WORKDIR /build
