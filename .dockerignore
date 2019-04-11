@@ -9,5 +9,4 @@
 !internal/
 !pkg/
 !Makefile
-!go.mod
-!go.sum
+!go.*
