@@ -1,0 +1,420 @@
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "github.com/gogo/protobuf"
+  revision = "v1.1.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/google/gofuzz"
+  revision = "v0.0.0-20170612174753-24818f796faf"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.92610836
+  license = "BSD-3-Clause"
+  name = "gopkg.in/inf.v0"
+  revision = "v0.9.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/apimachinery"
+  revision = "v0.0.0-20190409092423-760d1845f48b"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/klog"
+  revision = "v0.0.0-20190306015804-8e90cee79f82"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.9306931
+  license = "BSD-3-Clause"
+  name = "golang.org/x/text"
+  revision = "v0.3.1-0.20181227161524-e6919f6577db"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.9306931
+  license = "BSD-3-Clause"
+  name = "golang.org/x/net"
+  revision = "v0.0.0-20190206173232-65e2d4e15006"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.9306931
+  license = "BSD-3-Clause"
+  name = "golang.org/x/sys"
+  revision = "v0.0.0-20190403152447-81d4e9dc473e"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/sirupsen/logrus"
+  revision = "v1.4.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/modern-go/concurrent"
+  revision = "v0.0.0-20180306012644-bacd9c7ef1dd"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/modern-go/reflect2"
+  revision = "v1.0.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/json-iterator/go"
+  revision = "v0.0.0-20180701071628-ab8a2e0c74be"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.97927463
+  license = "Apache-2.0"
+  name = "gopkg.in/yaml.v2"
+  revision = "v2.2.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "sigs.k8s.io/yaml"
+  revision = "v1.1.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/api"
+  revision = "v0.0.0-20190409092523-d687e77c8ae9"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/client-go"
+  revision = "v0.0.0-20190409092706-ca8df85b1798"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "ISC"
+  name = "github.com/davecgh/go-spew"
+  revision = "v1.1.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.9306931
+  license = "BSD-3-Clause"
+  name = "golang.org/x/crypto"
+  revision = "v0.0.0-20190404164418-38d8ce5564a5"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "golang.org/x/oauth2"
+  revision = "v0.0.0-20190402181905-9f3314589c9a"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.9306931
+  license = "BSD-3-Clause"
+  name = "golang.org/x/time"
+  revision = "v0.0.0-20190308202827-9d24e82272b4"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/utils"
+  revision = "v0.0.0-20190308190857-21c4ce38f2a7"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-2-Clause"
+  name = "github.com/pkg/errors"
+  revision = "v0.8.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/goph/emperror"
+  revision = "v0.17.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/google/uuid"
+  revision = "v1.0.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/apiserver"
+  revision = "v0.0.0-20190409093229-67d6e044d2ef"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/pborman/uuid"
+  revision = "v1.2.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/beorn7/perks"
+  revision = "v0.0.0-20180321164747-3a771d992973"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/golang/protobuf"
+  revision = "v1.2.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/prometheus/client_model"
+  revision = "v0.0.0-20180712105110-5c3871d89910"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/prometheus/client_golang"
+  revision = "v0.9.2"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/matttproud/golang_protobuf_extensions"
+  revision = "v1.0.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/prometheus/common"
+  revision = "v0.2.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/prometheus/procfs"
+  revision = "v0.0.0-20181204211112-1dc9a6cbc91a"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/spf13/pflag"
+  revision = "v1.0.1"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/openshift/generic-admission-server"
+  revision = "v1.14.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/coreos/go-systemd"
+  revision = "v0.0.0-20180511133405-39ca1b05acc7"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/emicklei/go-restful"
+  revision = "v0.0.0-20170410110728-ff4f55a20633"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/evanphx/json-patch"
+  revision = "v0.0.0-20190203023257-5858425f7550"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "github.com/mailru/easyjson"
+  revision = "v0.0.0-20180823135443-60711f1a8329"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/go-openapi/swag"
+  revision = "v0.17.2"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/go-openapi/jsonpointer"
+  revision = "v0.19.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/PuerkitoBio/urlesc"
+  revision = "v0.0.0-20170810143723-de5bf2ad4578"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/PuerkitoBio/purell"
+  revision = "v1.1.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/go-openapi/jsonreference"
+  revision = "v0.19.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.98056996
+  license = "Apache-2.0"
+  name = "github.com/go-openapi/spec"
+  revision = "v0.17.2"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MPL-2.0"
+  name = "github.com/hashicorp/golang-lru"
+  revision = "v0.5.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/googleapis/gnostic"
+  revision = "v0.0.0-20170729233727-0c5108395e2d"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "BSD-3-Clause"
+  name = "github.com/imdario/mergo"
+  revision = "v0.3.7"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "github.com/munnerz/goautoneg"
+  revision = "v0.0.0-20120707110453-a547fc61f48d"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/kube-openapi"
+  revision = "v0.0.0-20190228160746-b3a7cee44a30"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "sigs.k8s.io/structured-merge-diff"
+  revision = "v0.0.0-20190302045857-e85c7b244fd2"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/coreos/etcd"
+  revision = "v3.3.10+incompatible"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "google.golang.org/grpc"
+  revision = "v1.13.0"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 0.0
+  license = ""
+  name = "google.golang.org/genproto"
+  revision = "v0.0.0-20170731182057-09f6ed296fc6"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/grpc-ecosystem/go-grpc-prometheus"
+  revision = "v0.0.0-20170330212424-2500245aa611"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/NYTimes/gziphandler"
+  revision = "v0.0.0-20170623195520-56545f4a5d46"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "k8s.io/component-base"
+  revision = "v0.0.0-20190409093041-e34633071963"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/spf13/cobra"
+  revision = "v0.0.3"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "MIT"
+  name = "gopkg.in/natefinch/lumberjack.v2"
+  revision = "v2.0.0-20150622162204-20b71e5b60d7"
+  type = "gomod"
+
+[[dependencies]]
+  confidence = 1.0
+  license = "Apache-2.0"
+  name = "github.com/golang/groupcache"
+  revision = "v0.0.0-20160516000752-02826c3e7903"
+  type = "gomod"
