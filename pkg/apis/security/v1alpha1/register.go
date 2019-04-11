@@ -22,6 +22,7 @@ import (
 
 // GroupName for crd
 const GroupName = "security.banzaicloud.com"
+
 // GroupVersion for crd
 const GroupVersion = "v1alpha1"
 
@@ -32,7 +33,7 @@ var (
 	// SchemeBuilder for crd
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	// AddToScheme for crd
-	AddToScheme   = SchemeBuilder.AddToScheme
+	AddToScheme = SchemeBuilder.AddToScheme
 )
 
 func addKnownTypes(scheme *runtime.Scheme) error {
