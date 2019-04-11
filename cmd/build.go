@@ -15,8 +15,10 @@
 package main
 
 // Provisioned by ldflags
+// nolint: gochecknoglobals
+
 var (
-	Version    string
-	CommitHash string
-	BuildDate  string
+	version    string
+	commitHash string
+	buildDate  string
 )

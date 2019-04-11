@@ -82,4 +82,4 @@ jobs:
       - run:
           name: Run verification
           command:
-              make check
+              make docker
