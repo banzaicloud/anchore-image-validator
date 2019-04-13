@@ -4,6 +4,7 @@ anchore-image-validator
 /bin/
 /build/
 /vendor/
+.licensei.cache
 
 # IDE integration
 /.idea/*
