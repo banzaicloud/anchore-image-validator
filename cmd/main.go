@@ -27,7 +27,7 @@ import (
 	"github.com/openshift/generic-admission-server/pkg/cmd"
 	"github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -88,7 +88,7 @@ func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionReques
 		Result:  &metav1.Status{Status: "Success", Message: ""}}
 
 	if admissionSpec.Kind.Kind == "Pod" {
-		whitelists, err := securityClientSet.Whitelists("default").List(metav1.ListOptions{})
+		whitelists, err := securityClientSet.Whitelists().List(metav1.ListOptions{})
 		if err != nil {
 			logrus.Error(err)
 		} else {

@@ -32,7 +32,6 @@ type WhiteListInterface interface {
 
 type whitelistClient struct {
 	restClient rest.Interface
-	ns         string
 }
 
 func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteListItemList, error) {

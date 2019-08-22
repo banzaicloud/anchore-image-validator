@@ -120,10 +120,10 @@ func createOrUpdateAudit(a auditInfo) {
 	tail := []byte(`}`)
 	actionByte = append(actionByte, tail...)
 	auditCR.SetOwnerReferences(a.owners)
-	audit, err := securityClientSet.Audits("default").Create(auditCR)
+	audit, err := securityClientSet.Audits().Create(auditCR)
 	if err != nil {
 		logrus.Error(err)
-		audit, err = securityClientSet.Audits("default").Update(a.name, actionByte)
+		audit, err = securityClientSet.Audits().Update(a.name, actionByte)
 		if err != nil {
 			logrus.Error(err)
 		} else {
@@ -139,7 +139,7 @@ func createOrUpdateAudit(a auditInfo) {
 }
 
 func listAudits() {
-	audits, err := securityClientSet.Audits("default").List(metav1.ListOptions{})
+	audits, err := securityClientSet.Audits().List(metav1.ListOptions{})
 	if err != nil {
 		logrus.Error(err)
 	} else {

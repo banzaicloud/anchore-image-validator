@@ -33,7 +33,6 @@ type AuditInterface interface {
 
 type auditClient struct {
 	restClient rest.Interface
-	ns         string
 }
 
 func (c *auditClient) List(opts metav1.ListOptions) (*v1alpha1.AuditList, error) {

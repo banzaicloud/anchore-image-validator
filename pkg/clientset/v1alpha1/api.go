@@ -51,17 +51,15 @@ func SecurityConfig(c *rest.Config) (*SecurityV1Alpha1Client, error) {
 }
 
 // Audits returns Audits for client
-func (c *SecurityV1Alpha1Client) Audits(namespace string) AuditInterface {
+func (c *SecurityV1Alpha1Client) Audits() AuditInterface {
 	return &auditClient{
 		restClient: c.restClient,
-		ns:         namespace,
 	}
 }
 
 // Whitelists return WhiteLists for client
-func (c *SecurityV1Alpha1Client) Whitelists(namespace string) WhiteListInterface {
+func (c *SecurityV1Alpha1Client) Whitelists() WhiteListInterface {
 	return &whitelistClient{
 		restClient: c.restClient,
-		ns:         namespace,
 	}
 }
