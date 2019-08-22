@@ -39,7 +39,6 @@ func (c *whitelistClient) List(opts metav1.ListOptions) (*v1alpha1.WhiteListItem
 	result := v1alpha1.WhiteListItemList{}
 	err := c.restClient.
 		Get().
-		Namespace(c.ns).
 		Resource("whitelistitems").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
@@ -52,7 +51,6 @@ func (c *whitelistClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.Wh
 	result := v1alpha1.WhiteListItem{}
 	err := c.restClient.
 		Get().
-		Namespace(c.ns).
 		Resource("whitelistitems").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -66,7 +64,6 @@ func (c *whitelistClient) Create(whiteListItem *v1alpha1.WhiteListItem) (*v1alph
 	result := v1alpha1.WhiteListItem{}
 	err := c.restClient.
 		Post().
-		Namespace(c.ns).
 		Resource("whitelistitems").
 		Body(whiteListItem).
 		Do().
@@ -79,7 +76,6 @@ func (c *whitelistClient) Delete(name string, options *metav1.DeleteOptions) err
 
 	return c.restClient.
 		Delete().
-		Namespace(c.ns).
 		Resource("whitelistitems").
 		Name(name).
 		Body(options).
