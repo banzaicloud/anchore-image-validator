@@ -3,9 +3,11 @@ module github.com/banzaicloud/anchore-image-validator
 go 1.12
 
 require (
-	github.com/goph/emperror v0.17.1
-	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
+	emperror.dev/errors v0.4.2
 	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/onsi/ginkgo v1.8.0 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/openshift/generic-admission-server v1.14.0
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/cobra v0.0.3 // indirect

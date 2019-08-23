@@ -16,12 +16,11 @@ package main
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"os"
 	"path"
 
-	"github.com/goph/emperror"
+	"emperror.dev/errors"
 	"github.com/sirupsen/logrus"
 	admissionV1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -100,16 +99,16 @@ func installValidatingWebhookConfig(c *rest.Config) error {
 	}
 	validatingWebhookConfig := createValidatingWebhook(coreClientSet)
 	if validatingWebhookConfig == nil {
-		return emperror.Wrap(err, "cannot create ValidatingkWebhooConfiguration")
+		return errors.WrapIf(err, "cannot create ValidatingkWebhooConfiguration")
 	}
 	admissionClientSet, err := admissionClient.NewForConfig(c)
 	if err != nil {
-		return emperror.Wrap(err, "cannot create admission registration client")
+		return errors.WrapIf(err, "cannot create admission registration client")
 	}
 	validatingInt := admissionClientSet.ValidatingWebhookConfigurations()
 	_, err = validatingInt.Create(validatingWebhookConfig)
 	if err != nil {
-		return emperror.Wrap(err, "cannot install ValidatingWebhookConfiguration")
+		return errors.WrapIf(err, "cannot install ValidatingWebhookConfiguration")
 	}
 	return nil
 }
@@ -121,7 +120,7 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 	}
 	podDetail, err := c.Pods(kubernetesNameSpace).Get(podName, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, emperror.Wrap(err, "unable to get self details")
+		return nil, nil, errors.WrapIf(err, "unable to get self details")
 	}
 
 	if anchoreReleaseName == "" {
@@ -137,7 +136,7 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 
 	secretDetail, err := c.Secrets(kubernetesNameSpace).Get(anchoreReleaseName, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, emperror.Wrap(err, "unable to get secretDetail")
+		return nil, nil, errors.WrapIf(err, "unable to get secretDetail")
 	}
 	caBundle := []byte(base64.StdEncoding.EncodeToString(secretDetail.Data["caCert"]))
 

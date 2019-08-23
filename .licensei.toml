@@ -13,4 +13,7 @@ ignored = [
   "google.golang.org/genproto",
   "github.com/gogo/protobuf",
   "github.com/davecgh/go-spew", # ISC license
+  "go.uber.org/atomic",
+  "go.uber.org/multierr",
+  "emperror.dev/errors",
 ]
