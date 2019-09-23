@@ -50,6 +50,7 @@ var (
 	apiServiceVersion   = os.Getenv("ANCHORE_APISERVICE_VERSION")
 	anchoreReleaseName  = os.Getenv("ANCHORE_RELEASE_NAME")
 	kubernetesNameSpace = os.Getenv("KUBERNETES_NAMESPACE")
+	webhookSelector     = os.Getenv("WEBHOOK_SELECTOR")
 )
 
 func main() {

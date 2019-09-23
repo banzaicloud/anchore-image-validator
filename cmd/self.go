@@ -51,10 +51,18 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 
 	failurePolicy := admissionV1beta1.Fail
 
+	selectorOperator := metav1.LabelSelectorOpNotIn
+	selectorValues := []string{"noscan"}
+
+	if webhookSelector == "include" {
+		selectorOperator = metav1.LabelSelectorOpIn
+		selectorValues = []string{"scan"}
+	}
+
 	expression := metav1.LabelSelectorRequirement{
 		Key:      "scan",
-		Operator: metav1.LabelSelectorOpNotIn,
-		Values:   []string{"noscan"},
+		Operator: selectorOperator,
+		Values:   selectorValues,
 	}
 
 	nameSpaceSelector := &metav1.LabelSelector{
