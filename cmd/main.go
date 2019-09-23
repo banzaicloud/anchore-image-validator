@@ -50,7 +50,7 @@ var (
 	apiServiceVersion   = os.Getenv("ANCHORE_APISERVICE_VERSION")
 	anchoreReleaseName  = os.Getenv("ANCHORE_RELEASE_NAME")
 	kubernetesNameSpace = os.Getenv("KUBERNETES_NAMESPACE")
-	webhookSelector     = os.Getenv("WEBHOOK_SELECTOR")
+	namespaceSelector   = getEnv("NAMESPACE_SELECTOR", "exclude")
 )
 
 func main() {
@@ -71,6 +71,14 @@ func main() {
 	installValidatingWebhookConfig(config)
 
 	cmd.RunAdmissionServer(&admissionHook{})
+}
+
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
 }
 
 func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {

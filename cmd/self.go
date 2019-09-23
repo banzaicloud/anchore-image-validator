@@ -54,7 +54,7 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 	selectorOperator := metav1.LabelSelectorOpNotIn
 	selectorValues := []string{"noscan"}
 
-	if webhookSelector == "include" {
+	if namespaceSelector == "include" {
 		selectorOperator = metav1.LabelSelectorOpIn
 		selectorValues = []string{"scan"}
 	}
