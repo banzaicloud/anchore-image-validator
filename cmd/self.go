@@ -1,55 +1,55 @@
-// Copyright © 2018 Banzai Cloud
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2019 Banzai Cloud.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"os"
 	"path"
 
 	"emperror.dev/errors"
-	"github.com/sirupsen/logrus"
-	admissionV1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	admissionClient "k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1"
-	clientV1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.ValidatingWebhookConfiguration {
+func createValidatingWebhook(c client.Client) (*admissionv1beta1.ValidatingWebhookConfiguration, error) {
 
 	path := path.Join("/apis", apiServiceGroup, apiServiceVersion, apiServiceResource)
 	webHookName := fmt.Sprintf("%s.%s", anchoreReleaseName, apiServiceGroup)
 	ownerref, caBundle, err := getSelf(c)
 	if err != nil {
-		logrus.Error(err)
-		return nil
+		return nil, errors.WrapIf(err, "unable to get self object")
 	}
-	rule := admissionV1beta1.Rule{
+	rule := admissionv1beta1.Rule{
 		APIGroups:   []string{""},
 		APIVersions: []string{"*"},
 		Resources:   []string{"pods"},
 	}
 
-	rulesWithOperations := admissionV1beta1.RuleWithOperations{
-		Operations: []admissionV1beta1.OperationType{admissionV1beta1.Create},
+	rulesWithOperations := admissionv1beta1.RuleWithOperations{
+		Operations: []admissionv1beta1.OperationType{admissionv1beta1.Create},
 		Rule:       rule,
 	}
 
-	failurePolicy := admissionV1beta1.Fail
+	failurePolicy := admissionv1beta1.Fail
 
 	selectorOperator := metav1.LabelSelectorOpNotIn
 	selectorValues := []string{"noscan"}
@@ -69,22 +69,22 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 		MatchExpressions: []metav1.LabelSelectorRequirement{expression},
 	}
 
-	validatingWebhook := admissionV1beta1.Webhook{
+	validatingWebhook := admissionv1beta1.ValidatingWebhook{
 		Name: webHookName,
-		ClientConfig: admissionV1beta1.WebhookClientConfig{
-			Service: &admissionV1beta1.ServiceReference{
+		ClientConfig: admissionv1beta1.WebhookClientConfig{
+			Service: &admissionv1beta1.ServiceReference{
 				Namespace: "default",
 				Name:      "kubernetes",
 				Path:      &path,
 			},
 			CABundle: caBundle,
 		},
-		Rules:             []admissionV1beta1.RuleWithOperations{rulesWithOperations},
+		Rules:             []admissionv1beta1.RuleWithOperations{rulesWithOperations},
 		FailurePolicy:     &failurePolicy,
 		NamespaceSelector: nameSpaceSelector,
 	}
 
-	validatingWebhookConfig := &admissionV1beta1.ValidatingWebhookConfiguration{
+	validatingWebhookConfig := &admissionv1beta1.ValidatingWebhookConfiguration{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ValidatingWebhookConfiguration",
 			APIVersion: "admissionregistration.k8s.io/v1beta1",
@@ -92,41 +92,37 @@ func createValidatingWebhook(c *clientV1.CoreV1Client) *admissionV1beta1.Validat
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webHookName,
 		},
-		Webhooks: []admissionV1beta1.Webhook{validatingWebhook},
+		Webhooks: []admissionv1beta1.ValidatingWebhook{validatingWebhook},
 	}
 
 	validatingWebhookConfig.SetOwnerReferences(ownerref)
 
-	return validatingWebhookConfig
+	return validatingWebhookConfig, nil
 }
 
-func installValidatingWebhookConfig(c *rest.Config) error {
-	coreClientSet, err := clientV1.NewForConfig(c)
+func installValidatingWebhookConfig(c client.Client) error {
+	validatingWebhookConfig, err := createValidatingWebhook(c)
 	if err != nil {
-		logrus.Error(err)
-	}
-	validatingWebhookConfig := createValidatingWebhook(coreClientSet)
-	if validatingWebhookConfig == nil {
 		return errors.WrapIf(err, "cannot create ValidatingkWebhooConfiguration")
 	}
-	admissionClientSet, err := admissionClient.NewForConfig(c)
-	if err != nil {
-		return errors.WrapIf(err, "cannot create admission registration client")
-	}
-	validatingInt := admissionClientSet.ValidatingWebhookConfigurations()
-	_, err = validatingInt.Create(validatingWebhookConfig)
+
+	err = c.Create(context.Background(), validatingWebhookConfig)
 	if err != nil {
 		return errors.WrapIf(err, "cannot install ValidatingWebhookConfiguration")
 	}
 	return nil
 }
 
-func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) {
+func getSelf(c client.Client) ([]metav1.OwnerReference, []byte, error) {
 	podName, _ := os.Hostname()
 	if kubernetesNameSpace == "" {
 		return nil, nil, errors.New("not defined KUBERNETES_NAMESPACE env")
 	}
-	podDetail, err := c.Pods(kubernetesNameSpace).Get(podName, metav1.GetOptions{})
+	podDetail := &corev1.Pod{}
+	err := c.Get(context.Background(), client.ObjectKey{
+		Namespace: kubernetesNameSpace,
+		Name:      podName,
+	}, podDetail)
 	if err != nil {
 		return nil, nil, errors.WrapIf(err, "unable to get self details")
 	}
@@ -142,7 +138,11 @@ func getSelf(c *clientV1.CoreV1Client) ([]metav1.OwnerReference, []byte, error) 
 		UID:        podDetail.ObjectMeta.UID,
 	}
 
-	secretDetail, err := c.Secrets(kubernetesNameSpace).Get(anchoreReleaseName, metav1.GetOptions{})
+	secretDetail := &corev1.Secret{}
+	err = c.Get(context.Background(), client.ObjectKey{
+		Namespace: kubernetesNameSpace,
+		Name:      anchoreReleaseName,
+	}, secretDetail)
 	if err != nil {
 		return nil, nil, errors.WrapIf(err, "unable to get secretDetail")
 	}
