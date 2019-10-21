@@ -1,20 +1,23 @@
-// Copyright © 2018 Banzai Cloud
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2019 Banzai Cloud.
 
-package main
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package app
 
 import (
+	"context"
 	"encoding/json"
 	"regexp"
 	"strings"
@@ -22,6 +25,8 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type auditInfo struct {
@@ -90,7 +95,7 @@ func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
 	return nil
 }
 
-func createOrUpdateAudit(a auditInfo) {
+func createOrUpdateAudit(a auditInfo, c client.Client) {
 	auditCR := &v1alpha1.Audit{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Audit",
@@ -111,35 +116,43 @@ func createOrUpdateAudit(a auditInfo) {
 			State: a.state,
 		},
 	}
-	actionByte := []byte(`{"spec":`)
-	aSpec, er := json.Marshal(auditCR.Spec)
-	if er != nil {
-		logrus.Error(er)
-	}
-	actionByte = append(actionByte, aSpec...)
-	tail := []byte(`}`)
-	actionByte = append(actionByte, tail...)
+
 	auditCR.SetOwnerReferences(a.owners)
-	audit, err := securityClientSet.Audits().Create(auditCR)
+
+	err := c.Create(context.Background(), auditCR)
+	//	audit, err := securityClientSet.Audits().Create(auditCR)
 	if err != nil {
 		logrus.Error(err)
-		audit, err = securityClientSet.Audits().Update(a.name, actionByte)
+
+		actionByte := []byte(`{"spec":`)
+		aSpec, er := json.Marshal(auditCR.Spec)
+		if er != nil {
+			logrus.Error(er)
+		}
+		actionByte = append(actionByte, aSpec...)
+		tail := []byte(`}`)
+		actionByte = append(actionByte, tail...)
+
+		err = c.Patch(context.Background(), auditCR, client.ConstantPatch(types.MergePatchType, actionByte))
+		//	audit, err = securityClientSet.Audits().Update(a.name, actionByte)
 		if err != nil {
 			logrus.Error(err)
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"Audit": audit,
+				"Audit": auditCR.Name,
 			}).Debug("Update Audit")
 		}
 	} else {
 		logrus.WithFields(logrus.Fields{
-			"Audit": audit,
+			"Audit": auditCR.Name,
 		}).Debug("Created Audit")
 	}
 }
 
-func listAudits() {
-	audits, err := securityClientSet.Audits().List(metav1.ListOptions{})
+func listAudits(c client.Client) {
+	audits := &v1alpha1.AuditList{}
+	err := c.List(context.Background(), audits)
+	//audits, err := securityClientSet.Audits().List(metav1.ListOptions{})
 	if err != nil {
 		logrus.Error(err)
 	} else {
