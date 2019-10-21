@@ -1,49 +1,44 @@
-// Copyright © 2018 Banzai Cloud
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2019 Banzai Cloud.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 package main
 
 import (
-	"encoding/json"
+	"crypto/tls"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
-	"strings"
-	"sync"
 
-	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
+	"emperror.dev/emperror"
+	"emperror.dev/errors"
+	"github.com/banzaicloud/anchore-image-validator/internal/app"
+	"github.com/banzaicloud/anchore-image-validator/internal/log"
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
-	clientV1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
-	"github.com/openshift/generic-admission-server/pkg/cmd"
-	"github.com/sirupsen/logrus"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
+	clientv1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
+	crclient "sigs.k8s.io/controller-runtime/pkg/client"
+	crconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-var securityClientSet *clientV1alpha1.SecurityV1Alpha1Client
+var securityClientSet *clientv1alpha1.SecurityV1Alpha1Client
 
-type admissionHook struct {
-	reservationClient dynamic.ResourceInterface
-	lock              sync.RWMutex
-	initialized       bool
-}
-
-const apiServiceResource = "imagechecks"
+const apiServiceResource = "imagecheck"
 
 var (
 	apiServiceGroup     = os.Getenv("ANCHORE_APISERVICE_GROUP")
@@ -53,24 +48,79 @@ var (
 	namespaceSelector   = getEnv("NAMESPACE_SELECTOR", "exclude")
 )
 
-func main() {
-	var config *rest.Config
-	var err error
+// nolint: gochecknoinits
+func init() {
+	pflag.Bool("version", false, "Show version information")
+	pflag.Bool("dump-config", false, "Dump configuration to the console (and exit)")
+}
 
-	config, err = rest.InClusterConfig()
-	if err != nil {
-		logrus.Error(err)
+func main() {
+
+	configure(viper.GetViper(), pflag.CommandLine)
+
+	pflag.Parse()
+
+	if viper.GetBool("version") {
+		fmt.Printf("%s version %s (%s) built on %s\n", "anchore-image-validator", version, commitHash, buildDate)
+
+		os.Exit(0)
 	}
+
+	err := viper.ReadInConfig()
+	_, configFileNotFound := err.(viper.ConfigFileNotFoundError)
+	if !configFileNotFound {
+		emperror.Panic(errors.Wrap(err, "failed to read configuration"))
+	}
+
+	var config Config
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		emperror.Panic(errors.Wrap(err, "failed to unmarshal configuration"))
+	}
+
+	if viper.GetBool("dump-config") {
+		fmt.Printf("%+v\n", config)
+
+		os.Exit(0)
+	}
+
+	// Create logger (first thing after configuration loading)
+	logger := log.NewLogger(config.Log)
+
+	// Provide some basic context to all log lines
+	logger = log.WithFields(logger, map[string]interface{}{"service": "imagecheck"})
+
+	k8sCfg := crconfig.GetConfigOrDie()
+
+	logger.Info("kubernetes config", map[string]interface{}{
+		"k8sHost": k8sCfg.Host})
 
 	v1alpha1.AddToScheme(scheme.Scheme)
-	securityClientSet, err = clientV1alpha1.SecurityConfig(config)
+	securityClientSet, err = clientv1alpha1.SecurityConfig(k8sCfg)
 	if err != nil {
-		logrus.Error(err)
+		logger.Error("error")
 	}
 
-	installValidatingWebhookConfig(config)
+	client, err := crclient.New(k8sCfg, crclient.Options{})
+	if err != nil {
+		logger.Error("get clisntset failed", map[string]interface{}{
+			"k8sHost": k8sCfg.Host})
+	}
 
-	cmd.RunAdmissionServer(&admissionHook{})
+	installValidatingWebhookConfig(client)
+
+	pair, err := tls.LoadX509KeyPair(config.App.CertFile, config.App.KeyFile)
+	if err != nil {
+		logger.Error("failed to load key pair")
+	}
+
+	ln, _ := net.Listen("tcp", fmt.Sprintf(":%v", config.App.Port))
+	httpServer := &http.Server{
+		Handler:   app.NewApp(logger, client),
+		TLSConfig: &tls.Config{Certificates: []tls.Certificate{pair}},
+	}
+	logger.Info("starting the webhook.")
+	httpServer.ServeTLS(ln, "", "")
 }
 
 func getEnv(key, fallback string) string {
@@ -79,112 +129,4 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
-}
-
-func (a *admissionHook) ValidatingResource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    apiServiceGroup,
-			Version:  apiServiceVersion,
-			Resource: apiServiceResource,
-		},
-		"imagecheck"
-}
-
-func (a *admissionHook) Validate(admissionSpec *admissionv1beta1.AdmissionRequest) *admissionv1beta1.AdmissionResponse {
-	status := &admissionv1beta1.AdmissionResponse{
-		Allowed: true,
-		UID:     admissionSpec.UID,
-		Result:  &metav1.Status{Status: "Success", Message: ""}}
-
-	if admissionSpec.Kind.Kind == "Pod" {
-		whitelists, err := securityClientSet.Whitelists().List(metav1.ListOptions{})
-		if err != nil {
-			logrus.Error(err)
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"whitelists": whitelists.Items,
-			}).Debug("Whitelists found")
-		}
-		pod := v1.Pod{}
-		json.Unmarshal(admissionSpec.Object.Raw, &pod)
-		logrus.WithFields(logrus.Fields{
-			"PodName":    pod.Name,
-			"NameSpace":  pod.Namespace,
-			"Labels":     pod.Labels,
-			"Anotations": pod.Annotations,
-		}).Debug("Pod details")
-
-		var result []string
-		var message string
-		var auditImages []v1alpha1.AuditImage
-		r, f := getReleaseName(pod.Labels, pod.Name)
-		for _, container := range pod.Spec.Containers {
-			image := container.Image
-			logrus.WithFields(logrus.Fields{
-				"image": image,
-			}).Info("Checking image")
-			auditImage, ok := anchore.CheckImage(image)
-			if !ok {
-				status.Result.Status = "Failure"
-				status.Allowed = false
-				if checkWhiteList(whitelists.Items, r, f) {
-					status.Result.Status = "Success"
-					status.Allowed = true
-					logrus.WithFields(logrus.Fields{
-						"PodName": pod.Name,
-					}).Info("Whitelisted release")
-				}
-				message = fmt.Sprintf("Image failed policy check: %s", image)
-				status.Result.Message = message
-				logrus.WithFields(logrus.Fields{
-					"image": image,
-				}).Warning("Image failed policy check")
-			} else {
-				message = fmt.Sprintf("Image passed policy check: %s", image)
-				logrus.WithFields(logrus.Fields{
-					"image": image,
-				}).Warning("Image passed policy check")
-			}
-			result = append(result, message)
-			auditImages = append(auditImages, auditImage)
-		}
-
-		fr := "false"
-		if f {
-			fr = "true"
-		}
-		action := "reject"
-		if status.Allowed {
-			action = "allowed"
-		}
-		owners := pod.GetOwnerReferences()
-		var auditName string
-		if len(owners) > 0 {
-			auditName = strings.ToLower(owners[0].Kind) + "-" + strings.ToLower(owners[0].Name)
-		} else {
-			auditName = pod.Name
-		}
-
-		ainfo := auditInfo{
-			name:        auditName,
-			labels:      map[string]string{"fakerelease": fr},
-			releaseName: r,
-			resource:    "Pod",
-			images:      auditImages,
-			result:      result,
-			action:      action,
-			state:       "",
-			owners:      owners,
-		}
-
-		createOrUpdateAudit(ainfo)
-		logrus.WithFields(logrus.Fields{
-			"Status": status,
-		}).Debug("Security scan status")
-	}
-	return status
-}
-
-func (a *admissionHook) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
-	return nil
 }
