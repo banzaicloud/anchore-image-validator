@@ -9,8 +9,6 @@ spec:
     kind: WhiteListItem
     plural: whitelistitems
     singular: whitelistitem
-    shortnames:
-      - wl
   scope: Cluster
   validation:
     openAPIV3Schema:
