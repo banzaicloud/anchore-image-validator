@@ -5,7 +5,7 @@ apiService:
   version: v1beta1
 image:
   repository: banzaicloud/anchore-image-validator
-  tag: 0.3.6
+  tag: remove-generic-admission-server
   pullPolicy: IfNotPresent
 service:
   name: anchoreimagecheck
@@ -18,7 +18,9 @@ externalAnchore:
   anchorePass: ""
 resources: {}
 
-namespaceSelector: ""
+namespaceSelector: {}
+
+objectSelector: {}
 
 ## Node selector
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector

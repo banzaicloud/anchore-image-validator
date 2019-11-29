@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "anchore-policy-validator.fullname" . }}
@@ -10,11 +10,16 @@ metadata:
     component: admission-server
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "anchore-policy-validator.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
         app: {{ template "anchore-policy-validator.name" . }}
         release: {{ .Release.Name }}
+        security.banzaicloud.io/mutate: skip
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "anchore-policy-validator.fullname" . }}
@@ -26,17 +31,15 @@ spec:
           secretName: {{ template "anchore-policy-validator.fullname" . }}
       - name: tmp
         emptyDir: {}
+      securityContext:
+        runAsUser: 65534
+        fsGroup: 65534
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
           - "/usr/local/bin/anchore-image-validator"
-          - "--audit-log-path=-"
-          - "--tls-cert-file=/var/serving-cert/servingCert"
-          - "--tls-private-key-file=/var/serving-cert/servingKey"
-          - "--v={{ .Values.logVerbosity }}"
-          - "--secure-port={{ .Values.service.internalPort }}"
           env:
           - name: KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
@@ -54,13 +57,11 @@ spec:
             value: {{ .Values.externalAnchore.anchoreHost }}
           - name: NAMESPACE_SELECTOR
             value: {{ default "exclude" .Values.namespaceSelector }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            runAsUser: 65534
-            fsGroup: 65534
-          ports:
-            - containerPort: {{ .Values.service.internalPort }}
           livenessProbe:
             httpGet:
               path: /healthz
