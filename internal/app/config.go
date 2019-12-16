@@ -19,7 +19,7 @@ package app
 // Config holds details necessary for app.
 type Config struct {
 	// Port defines server port
-	Port int
+	Port string
 	// CertFile server certificate path
 	CertFile string
 	// KeyFile server key path
