@@ -17,9 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 
@@ -52,6 +50,7 @@ var (
 func init() {
 	pflag.Bool("version", false, "Show version information")
 	pflag.Bool("dump-config", false, "Dump configuration to the console (and exit)")
+	pflag.Bool("dev-http", false, "Developer mode use http for local testing")
 }
 
 func main() {
@@ -92,7 +91,7 @@ func main() {
 
 	k8sCfg := crconfig.GetConfigOrDie()
 
-	logger.Info("kubernetes config", map[string]interface{}{
+	logger.Debug("kubernetes config", map[string]interface{}{
 		"k8sHost": k8sCfg.Host})
 
 	v1alpha1.AddToScheme(scheme.Scheme)
@@ -107,20 +106,17 @@ func main() {
 			"k8sHost": k8sCfg.Host})
 	}
 
-	installValidatingWebhookConfig(client)
+	logger.Info("starting the webhook.", map[string]interface{}{
+		"port":     ":" + config.App.Port,
+		"certfile": config.App.CertFile,
+		"keyfile":  config.App.KeyFile,
+	})
 
-	pair, err := tls.LoadX509KeyPair(config.App.CertFile, config.App.KeyFile)
-	if err != nil {
-		logger.Error("failed to load key pair")
+	if viper.GetBool("dev-http") {
+		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client))
+	} else {
+		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client))
 	}
-
-	ln, _ := net.Listen("tcp", fmt.Sprintf(":%v", config.App.Port))
-	httpServer := &http.Server{
-		Handler:   app.NewApp(logger, client),
-		TLSConfig: &tls.Config{Certificates: []tls.Certificate{pair}},
-	}
-	logger.Info("starting the webhook.")
-	httpServer.ServeTLS(ln, "", "")
 }
 
 func getEnv(key, fallback string) string {

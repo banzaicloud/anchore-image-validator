@@ -30,12 +30,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const imageValidate = "imagechecks"
+const imageValidate = "/imagecheck"
 
 // NewApp creates new application
 func NewApp(logger logur.Logger, client client.Client) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle(imageValidate, newHTTPHandler(logger, client))
+	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
 
 	return mux
 }
@@ -58,6 +59,8 @@ func newHTTPHandler(logger logur.Logger, client client.Client) http.Handler {
 	mux := http.NewServeMux()
 	controller := NewHTTPController(logger, client)
 	mux.HandleFunc(imageValidate, controller.webhookCTRL)
+	logger.Info("newHTTPHandler", map[string]interface{}{"handler": imageValidate})
+
 	return mux
 }
 
@@ -70,11 +73,18 @@ func NewHTTPController(logger logur.Logger, client client.Client) *HTTPControlle
 }
 
 func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "reading request body failed", http.StatusInternalServerError)
 		return
 	}
+	a.Logger.Debug("request body", map[string]interface{}{"body": body})
+
 	if len(body) == 0 {
 		http.Error(w, "empty body", http.StatusBadRequest)
 		return
@@ -93,7 +103,6 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
 			admissionResponse = validate(&ar, a.Logger, a.Client)
-			a.Logger.Info("------ ehunnvagyoke ------")
 		}
 	}
 
