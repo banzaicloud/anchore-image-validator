@@ -19,7 +19,7 @@ spec:
       labels:
         app: {{ template "anchore-policy-validator.name" . }}
         release: {{ .Release.Name }}
-        security.banzaicloud.io/mutate: skip
+        security.banzaicloud.io/validate: skip
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "anchore-policy-validator.fullname" . }}
@@ -64,11 +64,11 @@ spec:
             allowPrivilegeEscalation: false
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /imagecheck
               port: {{ .Values.service.internalPort }}
               scheme: HTTPS
           volumeMounts:
-          - mountPath: /var/serving-cert
+          - mountPath: /webhook/certs
             name: serving-cert
           - mountPath: /tmp
             name: tmp

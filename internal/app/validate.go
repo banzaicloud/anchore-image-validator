@@ -59,7 +59,7 @@ func validate(ar *admissionv1beta1.AdmissionReview, logger logur.Logger, c clien
 			return &admissionv1beta1.AdmissionResponse{
 				Allowed: false,
 				Result: &metav1.Status{
-					Reason: "scan results are above treshold",
+					Reason: "result of policy evaluation is failed",
 				},
 			}
 		}
