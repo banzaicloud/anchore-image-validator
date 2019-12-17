@@ -23,24 +23,24 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"logur.dev/logur"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	//	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func validate(ar *admissionv1beta1.AdmissionReview,
-	logger logur.Logger, c client.Client) *admissionv1beta1.AdmissionResponse {
-
+	logger logur.Logger) *admissionv1beta1.AdmissionResponse {
 	req := ar.Request
+	// c client.Client
 	logger.Info("AdmissionReview for", map[string]interface{}{
 		"Kind":      req.Kind,
 		"Namespsce": req.Namespace,
 		"Resource":  req.Resource,
 		"UserInfo":  req.UserInfo})
 
-	switch req.Kind.Kind {
-	case "Pod":
+	if req.Kind.Kind == "Pod" {
 		pod := v1.Pod{}
 		if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
 			logger.Error("could not unmarshal raw object")
+
 			return &admissionv1beta1.AdmissionResponse{
 				Result: &metav1.Status{
 					Message: err.Error(),
@@ -57,6 +57,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 				},
 			}
 		}
+
 		if !ok {
 			return &admissionv1beta1.AdmissionResponse{
 				Allowed: false,
@@ -78,6 +79,5 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 }
 
 func checkImage(pod *v1.Pod, namespave string, logger logur.Logger) (bool, error) {
-
 	return false, nil
 }

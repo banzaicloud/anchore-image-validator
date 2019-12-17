@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
-	clientv1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -44,15 +43,19 @@ type auditInfo struct {
 
 func getReleaseName(labels map[string]string, p string) (string, bool) {
 	release := labels["release"]
+
 	if release != "" {
 		logrus.WithFields(logrus.Fields{
 			"release": release,
 		}).Info("Check whitelist")
+
 		return release, false
 	}
+
 	logrus.WithFields(logrus.Fields{
 		"PodName": p,
 	}).Info("Missing release label, using PodName")
+
 	return p, true
 }
 
@@ -62,15 +65,19 @@ func checkWhiteList(wl []v1alpha1.WhiteListItem, r string, f bool) bool {
 			logrus.WithFields(logrus.Fields{
 				"FakeRelease": true,
 			}).Info("Missing release label, using PodName")
+
 			fakeRelease := string(res.ObjectMeta.Name + "-")
 			if strings.Contains(r, fakeRelease) {
 				return true
 			}
 		}
+
 		if r == res.ObjectMeta.Name {
 			return true
 		}
+
 		match := regexpWhiteList(res)
+
 		if match != nil {
 			if match.MatchString(r) {
 				return true
@@ -89,14 +96,17 @@ func regexpWhiteList(wl v1alpha1.WhiteListItem) *regexp.Regexp {
 				"error":      err,
 				"expression": wl.Spec.Regexp,
 			}).Error("regexp compile error")
+
 			return nil
 		}
+
 		return match
 	}
+
 	return nil
 }
 
-func createOrUpdateAudit(a auditInfo, c client.Client, sc *clientv1alpha1.Securityv1Alpha1Client) {
+func createOrUpdateAudit(a auditInfo, c client.Client) {
 	auditCR := &v1alpha1.Audit{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Audit",
@@ -121,37 +131,35 @@ func createOrUpdateAudit(a auditInfo, c client.Client, sc *clientv1alpha1.Securi
 	auditCR.SetOwnerReferences(a.owners)
 
 	err := c.Create(context.Background(), auditCR)
-	audit, err := sc.Audits().Create(auditCR)
 	if err != nil {
 		logrus.Error(err)
 
-		actionByte := []byte(`{"spec":`)
-		aSpec, er := json.Marshal(auditCR.Spec)
-		if er != nil {
-			logrus.Error(er)
-		}
-		actionByte = append(actionByte, aSpec...)
-		tail := []byte(`}`)
-		actionByte = append(actionByte, tail...)
+		aCR, err := json.Marshal(auditCR)
 
-		err = c.Patch(context.Background(), auditCR, client.ConstantPatch(types.MergePatchType, actionByte))
-		audit, err = sc.Audits().Update(a.name, actionByte)
+		if err != nil {
+			logrus.Error(err)
+		}
+
+		err = c.Patch(context.Background(), auditCR, client.ConstantPatch(types.JSONPatchType, aCR))
+
 		if err != nil {
 			logrus.Error(err)
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"Audit": audit,
+				"Audit": auditCR,
 			}).Debug("Update Audit")
 		}
 	} else {
 		logrus.WithFields(logrus.Fields{
-			"Audit": audit,
+			"Audit": auditCR,
 		}).Debug("Created Audit")
 	}
 }
 
-func listAudits(c client.Client, sc *clientv1alpha1.Securityv1Alpha1Client) {
-	audits, err := sc.Audits().List(metav1.ListOptions{})
+func listAudits(c client.Client) {
+	audits := &v1alpha1.AuditList{}
+	err := c.List(context.Background(), audits)
+
 	if err != nil {
 		logrus.Error(err)
 	} else {

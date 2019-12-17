@@ -45,10 +45,12 @@ func (in *WhiteListItemList) DeepCopyObject() runtime.Object {
 
 	if in.Items != nil {
 		out.Items = make([]WhiteListItem, len(in.Items))
+
 		for i := range in.Items {
 			in.Items[i].DeepCopyInto(&out.Items[i])
 		}
 	}
+
 	return &out
 }
 
@@ -81,9 +83,11 @@ func (in *AuditList) DeepCopyObject() runtime.Object {
 
 	if in.Items != nil {
 		out.Items = make([]Audit, len(in.Items))
+
 		for i := range in.Items {
 			in.Items[i].DeepCopyInto(&out.Items[i])
 		}
 	}
+
 	return &out
 }

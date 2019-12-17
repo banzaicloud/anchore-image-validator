@@ -21,10 +21,10 @@ endif
 DOCKER_TAG ?= ${VERSION}
 
 # Dependency versions
-GOLANGCI_VERSION = 1.12.3
+GOLANGCI_VERSION = 1.21.0
 LICENSEI_VERSION = 0.1.0
 
-GOLANG_VERSION = 1.12
+GOLANG_VERSION = 1.13
 
 .PHONY: clean
 clean: ## Clean the working area and the project
