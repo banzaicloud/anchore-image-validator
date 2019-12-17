@@ -110,7 +110,7 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 	auditCR := &v1alpha1.Audit{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Audit",
-			APIVersion: "v1alpha1",
+			APIVersion: "security.banzaicloud.com/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   a.name,
@@ -139,7 +139,7 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 			logrus.Error(err)
 		}
 
-		if err := c.Patch(context.Background(), auditCR, client.ConstantPatch(types.JSONPatchType, aCR)); err != nil {
+		if err := c.Patch(context.Background(), auditCR, client.ConstantPatch(types.MergePatchType, aCR)); err != nil {
 			logrus.Error(err)
 		} else {
 			logrus.WithFields(logrus.Fields{
