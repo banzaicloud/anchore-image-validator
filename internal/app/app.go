@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	clientv1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -38,11 +37,12 @@ var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
-	defaulter     = runtime.ObjectDefaulter(runtimeScheme)
+
+//	defaulter     = runtime.ObjectDefaulter(runtimeScheme)
 )
 
 // NewApp creates new application
-func NewApp(logger logur.Logger, client client.Client, sc *clientv1alpha1.Securityv1Alpha1Client) http.Handler {
+func NewApp(logger logur.Logger, client client.Client) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle(imageValidate, newHTTPHandler(logger, client))
 	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
@@ -85,6 +85,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "reading request body failed", http.StatusInternalServerError)
 		return
 	}
+
 	a.Logger.Debug("request body", map[string]interface{}{"body": body})
 
 	if len(body) == 0 {
@@ -93,9 +94,12 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var admissionResponse *admissionv1beta1.AdmissionResponse
+
 	ar := admissionv1beta1.AdmissionReview{}
+
 	if _, _, err := deserializer.Decode(body, nil, &ar); err != nil {
 		a.Logger.Error("Can't decode body")
+
 		admissionResponse = &admissionv1beta1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
@@ -104,7 +108,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
-			admissionResponse = validate(&ar, a.Logger, a.Client)
+			admissionResponse = validate(&ar, a.Logger) //a.Client)
 		}
 	}
 
@@ -120,7 +124,9 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 		a.Logger.Error("Can't encode response")
 		http.Error(w, fmt.Sprintf("could not encode response: %v", err), http.StatusInternalServerError)
 	}
-	a.Logger.Info("Ready to write reponse ...")
+
+	a.Logger.Info("Ready to write response ...")
+
 	if _, err := w.Write(resp); err != nil {
 		a.Logger.Error("Can't write response")
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)

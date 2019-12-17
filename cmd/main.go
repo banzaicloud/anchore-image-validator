@@ -26,15 +26,12 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/internal/app"
 	"github.com/banzaicloud/anchore-image-validator/internal/log"
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
-	clientv1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes/scheme"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 	crconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
-
-const apiServiceResource = "imagecheck"
 
 // nolint: gochecknoinits
 func init() {
@@ -44,7 +41,6 @@ func init() {
 }
 
 func main() {
-
 	configure(viper.GetViper(), pflag.CommandLine)
 
 	pflag.Parse()
@@ -57,12 +53,14 @@ func main() {
 
 	err := viper.ReadInConfig()
 	_, configFileNotFound := err.(viper.ConfigFileNotFoundError)
+
 	if !configFileNotFound {
 		emperror.Panic(errors.Wrap(err, "failed to read configuration"))
 	}
 
 	var config Config
 	err = viper.Unmarshal(&config)
+
 	if err != nil {
 		emperror.Panic(errors.Wrap(err, "failed to unmarshal configuration"))
 	}
@@ -85,10 +83,6 @@ func main() {
 		"k8sHost": k8sCfg.Host})
 
 	v1alpha1.AddToScheme(scheme.Scheme)
-	sc, err := clientv1alpha1.SecurityConfig(k8sCfg)
-	if err != nil {
-		logger.Error("error")
-	}
 
 	client, err := crclient.New(k8sCfg, crclient.Options{})
 	if err != nil {
@@ -103,9 +97,9 @@ func main() {
 	})
 
 	if viper.GetBool("dev-http") {
-		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, sc))
+		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client))
 	} else {
-		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, sc))
+		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client))
 	}
 }
 
@@ -114,5 +108,6 @@ func getEnv(key, fallback string) string {
 	if !exists {
 		value = fallback
 	}
+
 	return value
 }

@@ -39,6 +39,7 @@ func configure(v *viper.Viper, p *pflag.FlagSet) {
 	p.Init("imagecheck", pflag.ExitOnError)
 	pflag.Usage = func() {
 		_, _ = fmt.Fprintln(os.Stderr, "Usage of imagecheck:")
+
 		pflag.PrintDefaults()
 	}
 	_ = v.BindPFlags(p)
