@@ -130,8 +130,7 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 
 	auditCR.SetOwnerReferences(a.owners)
 
-	err := c.Create(context.Background(), auditCR)
-	if err != nil {
+	if err := c.Create(context.Background(), auditCR); err != nil {
 		logrus.Error(err)
 
 		aCR, err := json.Marshal(auditCR)
@@ -140,9 +139,7 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 			logrus.Error(err)
 		}
 
-		err = c.Patch(context.Background(), auditCR, client.ConstantPatch(types.JSONPatchType, aCR))
-
-		if err != nil {
+		if err := c.Patch(context.Background(), auditCR, client.ConstantPatch(types.JSONPatchType, aCR)); err != nil {
 			logrus.Error(err)
 		} else {
 			logrus.WithFields(logrus.Fields{
@@ -158,9 +155,8 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 
 func listAudits(c client.Client) {
 	audits := &v1alpha1.AuditList{}
-	err := c.List(context.Background(), audits)
 
-	if err != nil {
+	if err := c.List(context.Background(), audits); err != nil {
 		logrus.Error(err)
 	} else {
 		logrus.WithFields(logrus.Fields{
