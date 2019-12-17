@@ -26,7 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func validate(ar *admissionv1beta1.AdmissionReview, logger logur.Logger, c client.Client) *admissionv1beta1.AdmissionResponse {
+func validate(ar *admissionv1beta1.AdmissionReview,
+	logger logur.Logger, c client.Client) *admissionv1beta1.AdmissionResponse {
+
 	req := ar.Request
 	logger.Info("AdmissionReview for", map[string]interface{}{
 		"Kind":      req.Kind,

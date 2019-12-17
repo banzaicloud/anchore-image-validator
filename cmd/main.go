@@ -34,17 +34,7 @@ import (
 	crconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-var securityClientSet *clientv1alpha1.SecurityV1Alpha1Client
-
 const apiServiceResource = "imagecheck"
-
-var (
-	apiServiceGroup     = os.Getenv("ANCHORE_APISERVICE_GROUP")
-	apiServiceVersion   = os.Getenv("ANCHORE_APISERVICE_VERSION")
-	anchoreReleaseName  = os.Getenv("ANCHORE_RELEASE_NAME")
-	kubernetesNameSpace = os.Getenv("KUBERNETES_NAMESPACE")
-	namespaceSelector   = getEnv("NAMESPACE_SELECTOR", "exclude")
-)
 
 // nolint: gochecknoinits
 func init() {
@@ -95,7 +85,7 @@ func main() {
 		"k8sHost": k8sCfg.Host})
 
 	v1alpha1.AddToScheme(scheme.Scheme)
-	securityClientSet, err = clientv1alpha1.SecurityConfig(k8sCfg)
+	sc, err := clientv1alpha1.SecurityConfig(k8sCfg)
 	if err != nil {
 		logger.Error("error")
 	}
@@ -113,9 +103,9 @@ func main() {
 	})
 
 	if viper.GetBool("dev-http") {
-		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client))
+		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, sc))
 	} else {
-		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client))
+		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, sc))
 	}
 }
 
