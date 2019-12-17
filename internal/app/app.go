@@ -108,7 +108,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
-			admissionResponse = validate(&ar, a.Logger) //a.Client)
+			admissionResponse = validate(&ar, a.Logger, a.Client)
 		}
 	}
 
