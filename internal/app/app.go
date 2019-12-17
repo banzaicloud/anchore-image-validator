@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	clientv1alpha1 "github.com/banzaicloud/anchore-image-validator/pkg/clientset/v1alpha1"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,21 +33,22 @@ import (
 
 const imageValidate = "/imagecheck"
 
-// NewApp creates new application
-func NewApp(logger logur.Logger, client client.Client) http.Handler {
-	mux := http.NewServeMux()
-	mux.Handle(imageValidate, newHTTPHandler(logger, client))
-	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
-
-	return mux
-}
-
+// nolint: gochecknoglobals
 var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
 	defaulter     = runtime.ObjectDefaulter(runtimeScheme)
 )
+
+// NewApp creates new application
+func NewApp(logger logur.Logger, client client.Client, sc *clientv1alpha1.Securityv1Alpha1Client) http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle(imageValidate, newHTTPHandler(logger, client))
+	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
+
+	return mux
+}
 
 // HTTPController collects the greeting use cases and exposes them as HTTP handlers.
 type HTTPController struct {

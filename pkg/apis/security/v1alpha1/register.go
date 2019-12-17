@@ -28,10 +28,10 @@ const GroupName = "security.banzaicloud.com"
 // GroupVersion for crd
 const GroupVersion = "v1alpha1"
 
-// SchemeGroupVersion for crd
-var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
-
+// nolint: gochecknoglobals
 var (
+	// SchemeGroupVersion for crd
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
 	// SchemeBuilder for crd
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	// AddToScheme for crd

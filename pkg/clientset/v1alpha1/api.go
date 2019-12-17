@@ -25,19 +25,19 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 )
 
-// SecurityV1Alpha1Interface interface for audit
-type SecurityV1Alpha1Interface interface {
+// Securityv1Alpha1Interface interface for audit
+type Securityv1Alpha1Interface interface {
 	Audits(namespace string) AuditInterface
 	Whitelists(namespace string) WhiteListInterface
 }
 
-// SecurityV1Alpha1Client client for crd
-type SecurityV1Alpha1Client struct {
+// Securityv1Alpha1Client client for crd
+type Securityv1Alpha1Client struct {
 	restClient rest.Interface
 }
 
 // SecurityConfig for admission hook configuration
-func SecurityConfig(c *rest.Config) (*SecurityV1Alpha1Client, error) {
+func SecurityConfig(c *rest.Config) (*Securityv1Alpha1Client, error) {
 	config := *c
 	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha1.GroupName, Version: v1alpha1.GroupVersion}
 	config.APIPath = "/apis"
@@ -49,18 +49,18 @@ func SecurityConfig(c *rest.Config) (*SecurityV1Alpha1Client, error) {
 		return nil, err
 	}
 
-	return &SecurityV1Alpha1Client{restClient: client}, nil
+	return &Securityv1Alpha1Client{restClient: client}, nil
 }
 
 // Audits returns Audits for client
-func (c *SecurityV1Alpha1Client) Audits() AuditInterface {
+func (c *Securityv1Alpha1Client) Audits() AuditInterface {
 	return &auditClient{
 		restClient: c.restClient,
 	}
 }
 
 // Whitelists return WhiteLists for client
-func (c *SecurityV1Alpha1Client) Whitelists() WhiteListInterface {
+func (c *Securityv1Alpha1Client) Whitelists() WhiteListInterface {
 	return &whitelistClient{
 		restClient: c.restClient,
 	}
