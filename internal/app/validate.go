@@ -17,19 +17,24 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
+	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"logur.dev/logur"
-	//	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func validate(ar *admissionv1beta1.AdmissionReview,
-	logger logur.Logger) *admissionv1beta1.AdmissionResponse {
+	logger logur.Logger, c client.Client) *admissionv1beta1.AdmissionResponse {
 	req := ar.Request
-	// c client.Client
+
 	logger.Info("AdmissionReview for", map[string]interface{}{
 		"Kind":      req.Kind,
 		"Namespsce": req.Namespace,
@@ -37,6 +42,18 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 		"UserInfo":  req.UserInfo})
 
 	if req.Kind.Kind == "Pod" {
+		whitelists := &v1alpha1.WhiteListItemList{}
+
+		if err := c.List(context.Background(), whitelists); err != nil {
+			logger.Error("cannot list whitelistimets", map[string]interface{}{
+				"error": err.Error(),
+			})
+		} else {
+			logger.Debug("whitelists found", map[string]interface{}{
+				"whitelists": whitelists.Items,
+			})
+		}
+
 		pod := v1.Pod{}
 		if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
 			logger.Error("could not unmarshal raw object")
@@ -48,24 +65,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
-		ok, err := checkImage(&pod, pod.GetNamespace(), logger)
-		if err != nil {
-			return &admissionv1beta1.AdmissionResponse{
-				Allowed: false,
-				Result: &metav1.Status{
-					Reason: metav1.StatusReason(err.Error()),
-				},
-			}
-		}
-
-		if !ok {
-			return &admissionv1beta1.AdmissionResponse{
-				Allowed: false,
-				Result: &metav1.Status{
-					Reason: "result of policy evaluation is failed",
-				},
-			}
-		}
+		return checkImage(&pod, whitelists, logger, c)
 	}
 
 	return &admissionv1beta1.AdmissionResponse{
@@ -78,6 +78,99 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 	}
 }
 
-func checkImage(pod *v1.Pod, namespave string, logger logur.Logger) (bool, error) {
-	return false, nil
+func checkImage(pod *v1.Pod,
+	wl *v1alpha1.WhiteListItemList,
+	logger logur.Logger,
+	c client.Client) *admissionv1beta1.AdmissionResponse {
+	result := []string{}
+	auditImages := []v1alpha1.AuditImage{}
+	message := ""
+
+	resp := &admissionv1beta1.AdmissionResponse{
+		Allowed: true,
+		Result: &metav1.Status{
+			Status:  "Success",
+			Reason:  "",
+			Message: "",
+		},
+	}
+
+	r, f := getReleaseName(pod.Labels, pod.Name)
+
+	for _, container := range pod.Spec.Containers {
+		image := container.Image
+
+		logger.Debug("Checking image", map[string]interface{}{
+			"image": image,
+		})
+
+		auditImage, ok := anchore.CheckImage(image)
+
+		if !ok {
+			resp.Result.Status = "Failure"
+			resp.Allowed = false
+
+			if checkWhiteList(wl.Items, r, f) {
+				resp.Result.Status = "Success"
+				resp.Allowed = true
+
+				logger.Info("Whitelisted release", map[string]interface{}{
+					"PodName": pod.Name,
+				})
+			}
+			message = fmt.Sprintf("Image failed policy check: %s", image)
+			resp.Result.Message = message
+
+			logger.Warn("Image failed policy check", map[string]interface{}{
+				"image": image,
+			})
+		} else {
+			message = fmt.Sprintf("Image passed policy check: %s", image)
+
+			logger.Warn("Image passed policy check", map[string]interface{}{
+				"image": image,
+			})
+		}
+
+		result = append(result, message)
+		auditImages = append(auditImages, auditImage)
+	}
+
+	fr := "false"
+	if f {
+		fr = "true"
+	}
+
+	action := "reject"
+	if resp.Allowed {
+		action = "allowed"
+	}
+
+	owners := pod.GetOwnerReferences()
+	var auditName string
+
+	if len(owners) > 0 {
+		auditName = strings.ToLower(owners[0].Kind) + "-" + strings.ToLower(owners[0].Name)
+	} else {
+		auditName = pod.Name
+	}
+
+	ainfo := auditInfo{
+		name:        auditName,
+		labels:      map[string]string{"fakerelease": fr},
+		releaseName: r,
+		resource:    "Pod",
+		images:      auditImages,
+		result:      result,
+		action:      action,
+		state:       "",
+		owners:      owners,
+	}
+
+	createOrUpdateAudit(ainfo, c)
+	logger.Debug("Security scan status", map[string]interface{}{
+		"Status": resp,
+	})
+
+	return resp
 }
