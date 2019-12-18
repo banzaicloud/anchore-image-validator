@@ -6,7 +6,7 @@ jobs:
       docker_layer_caching: true
 
     environment:
-      GO_VERSION: "1.12.3"
+      GO_VERSION: "1.13"
       # K8S_VERSION: v1.13.1
       # KUBECONFIG: /home/circleci/.kube/config
       # MINIKUBE_VERSION: v0.33.1
@@ -45,7 +45,7 @@ jobs:
           key: go-mod-v1-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
-      
+
       - run:
           name: Install license checker
           command: make bin/licensei
