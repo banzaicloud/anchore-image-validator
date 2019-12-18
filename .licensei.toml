@@ -16,4 +16,7 @@ ignored = [
   "go.uber.org/atomic",
   "go.uber.org/multierr",
   "emperror.dev/errors",
+  "emperror.dev/emperror",
+  "logur.dev/logur",
+  "logur.dev/adapter/logrus",
 ]
