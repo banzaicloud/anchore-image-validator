@@ -10,11 +10,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.6.2
 	k8s.io/api v0.17.1
+	k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604 // indirect
 	k8s.io/apimachinery v0.17.1
 	k8s.io/client-go v0.17.1
 	logur.dev/adapter/logrus v0.4.1
 	logur.dev/logur v0.16.2
-	sigs.k8s.io/controller-runtime v0.3.0
+	sigs.k8s.io/controller-runtime v0.4.0
 )
 
 replace (
