@@ -51,6 +51,10 @@ webhooks:
       operator: NotIn
       values:
       - {{ .Release.Namespace }}
+    - key: scan
+      operator: NotIn
+      values:
+      - noscan
 {{- if and (eq (int $major) 1) (ge (int $minor) 15) }}
   objectSelector:
     matchExpressions:
