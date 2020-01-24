@@ -1,5 +1,7 @@
 version: 2.1
 
+orbs:
+  helm: banzaicloud/helm@0.0.6
 jobs:
   build:
     docker:
@@ -56,3 +58,22 @@ workflows:
   ci:
     jobs:
       - build
+      - helm/lint-chart:
+          name: Lint chart
+          charts-dir: charts
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /anchore-policy-validator\/\d+\.\d+\.\d+(?:-(?:dev|rc)\.\d+)?/
+      - helm/publish-chart:
+          name: Publish chart
+          context: helm
+          charts-dir: charts
+          requires:
+            - 'Lint chart'
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /anchore-policy-validator\/\d+\.\d+\.\d+(?:-(?:dev|rc)\.\d+)?/
