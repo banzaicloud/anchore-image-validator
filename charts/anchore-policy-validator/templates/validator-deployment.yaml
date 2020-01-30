@@ -55,8 +55,6 @@ spec:
             value: {{ .Values.externalAnchore.anchorePass }}
           - name: ANCHORE_ENGINE_URL
             value: {{ .Values.externalAnchore.anchoreHost }}
-          - name: NAMESPACE_SELECTOR
-            value: {{ default "exclude" .Values.namespaceSelector }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
           securityContext:
