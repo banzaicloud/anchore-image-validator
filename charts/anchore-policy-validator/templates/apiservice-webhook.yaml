@@ -49,7 +49,7 @@ webhooks:
   {{- end }}
     matchExpressions:
   {{- if .Values.namespaceSelector.matchExpressions }}
-{{ toYaml .Values.namespaceSelector.matchExpressions | indent 6 }}
+{{ toYaml .Values.namespaceSelector.matchExpressions | indent 4 }}
   {{- end }}
     - key: name
       operator: NotIn
