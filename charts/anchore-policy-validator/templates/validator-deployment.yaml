@@ -20,6 +20,8 @@ spec:
         app: {{ template "anchore-policy-validator.name" . }}
         release: {{ .Release.Name }}
         security.banzaicloud.io/validate: skip
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/apiservice-webhook.yaml") . | sha256sum }}
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "anchore-policy-validator.fullname" . }}
