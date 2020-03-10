@@ -5,7 +5,9 @@ go 1.13
 require (
 	emperror.dev/emperror v0.32.0
 	emperror.dev/errors v0.7.0
-	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/docker/distribution v0.0.0-20200213211116-66809646d941
+	github.com/imdario/mergo v0.3.8 // indirect
+	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.6.2

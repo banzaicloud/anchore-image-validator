@@ -21,9 +21,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
+	"github.com/docker/distribution/reference"
 	"github.com/sirupsen/logrus"
 )
 
@@ -145,12 +145,18 @@ func AddImage(image string) error {
 
 //CheckImage checking Image with Anchore
 func CheckImage(image string) (v1alpha1.AuditImage, bool) {
-	imageParts := strings.Split(image, ":")
-	tag := "latest"
-
-	if len(imageParts) > 1 {
-		tag = imageParts[1]
+	ref, err := reference.ParseNormalizedNamed(image)
+	if err != nil {
+		logrus.Error(err)
+		return v1alpha1.AuditImage{}, false
 	}
+	imageName := ref.(reference.Named).Name()
+	imageTag := reference.TagNameOnly(ref).(reference.Tagged).Tag()
+
+	logrus.WithFields(logrus.Fields{
+		"image_name": imageName,
+		"image_tag":  imageTag,
+	}).Info("Checking image")
 
 	digest, err := getImageDigest(image)
 
@@ -161,13 +167,13 @@ func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 
 	lastUpdated := getImageLastUpdate(digest)
 	auditImage := v1alpha1.AuditImage{
-		ImageName:   imageParts[0],
-		ImageTag:    tag,
+		ImageName:   imageName,
+		ImageTag:    imageTag,
 		ImageDigest: digest,
 		LastUpdated: lastUpdated,
 	}
 
-	return auditImage, getStatus(digest, tag)
+	return auditImage, getStatus(digest, imageTag)
 }
 
 func getImageLastUpdate(digest string) string {
