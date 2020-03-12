@@ -100,9 +100,9 @@ func getStatus(digest string, tag string) bool {
 	return result[0][digest][resultIndex][0].Status == "pass"
 }
 
-func getImage(imageRef string) (Image, error) {
+func getOrAddImage(imageRef string) (Image, error) {
 	params := map[string]string{"tag": imageRef}
-	body, err := anchoreRequest("/v1/images?history=false", params, "GET")
+	body, err := anchoreRequest("/v1/images?history=false", params, "POST")
 
 	if err != nil {
 		return Image{}, err
@@ -115,32 +115,21 @@ func getImage(imageRef string) (Image, error) {
 		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %v", err)
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"Image": images[0],
+	}).Info("Get or Added image")
+
 	return images[0], nil
 }
+
 func getImageDigest(imageRef string) (string, error) {
-	image, err := getImage(imageRef)
+	image, err := getOrAddImage(imageRef)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to get image digest: %v", err)
 	}
 
 	return image.ImageDigest, nil
-}
-
-// AddImage add Image to Anchore
-func AddImage(image string) error {
-	params := map[string]string{"tag": image}
-	_, err := anchoreRequest("/v1/images", params, "POST")
-
-	if err != nil {
-		return err
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"Image": image,
-	}).Info("Added image to Anchore Engine")
-
-	return nil
 }
 
 //CheckImage checking Image with Anchore
@@ -161,8 +150,7 @@ func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 	digest, err := getImageDigest(image)
 
 	if err != nil {
-		AddImage(image)
-		digest, _ = getImageDigest(image)
+		return v1alpha1.AuditImage{}, false
 	}
 
 	lastUpdated := getImageLastUpdate(digest)
