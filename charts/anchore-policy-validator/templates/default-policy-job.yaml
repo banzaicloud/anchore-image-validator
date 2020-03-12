@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: {{ template "anchore-policy-validator.fullname" . }}-default-policy
+        security.banzaicloud.io/validate: skip
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "anchore-policy-validator.fullname" . }}
