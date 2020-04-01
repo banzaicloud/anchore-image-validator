@@ -16,6 +16,7 @@ package anchore
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -32,7 +33,19 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	password := os.Getenv("ANCHORE_ENGINE_PASSWORD")
 	anchoreEngineURL := os.Getenv("ANCHORE_ENGINE_URL")
 	fullURL := anchoreEngineURL + path
-	client := &http.Client{}
+
+	var insecure bool
+	if os.Getenv("ANCHORE_INSECURE_TLS") == "true" {
+		insecure = true
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecure,
+			},
+		},
+	}
 
 	bodyParamJSON, err := json.Marshal(bodyParams)
 
