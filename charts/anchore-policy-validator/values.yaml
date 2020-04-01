@@ -39,4 +39,4 @@ rbac:
   psp:
     enabled: false
 
-tlsInsecure: false
+insecureSkipTLSVerify: false
