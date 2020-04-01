@@ -35,7 +35,7 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	fullURL := anchoreEngineURL + path
 
 	var insecure bool
-	if os.Getenv("ANCHORE_INSECURE_TLS") == "true" {
+	if os.Getenv("ANCHORE_ENGINE_INSECURE") == "true" {
 		insecure = true
 	}
 

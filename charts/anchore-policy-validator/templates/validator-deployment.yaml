@@ -43,8 +43,8 @@ spec:
           command:
           - "/usr/local/bin/anchore-image-validator"
           env:
-          - name: ANCHORE_INSECURE_TLS
-            value: {{ quote .Values.tlsInsecure }}
+          - name: ANCHORE_ENGINE_INSECURE
+            value: {{ quote .Values.insecureSkipTLSVerify }}
           - name: KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
           - name: ANCHORE_APISERVICE_GROUP
