@@ -20,13 +20,13 @@ During deploying this chart, it's creating predefined policy bundles and activat
 
 ## Policy bundles
 
-|  PolicyName   |                         Description                         |
+|  Bundle Name  |                         Description                         |
 |---------------|-------------------------------------------------------------|
-|AllowAll       |Allow all images to deploy                                   |
-|RejectCritical |Reject deploying images that contain `critical` vulnerabiliy |
-|RejectHigh     |Reject deploying images that contain `high` vulnerabiliy     |
-|BlockRoot      |Block deploying images that using `root` as effective user   |
-|DenyAll        |Deny all imagest to deploy                                   |
+|Allow all and warn bundle|Allow all images and warn if vulnerabilities are found |
+|Reject critical bundle|Reject deploying images that contain `critical` vulnerabiliy |
+|Reject high bundle|Reject deploying images that contain `high` vulnerabiliy  |
+|Block root bundle|Block deploying images that using `root` as effective user |
+|Deny all images|Deny all imagest to deploy                                   |
 
 
 ## Configuration
@@ -40,7 +40,7 @@ The following tables lists configurable parameters of the anchore-policy-validat
 |apiService.group                     |group of registered api service              |admission.anchore.io                      |
 |apiService.version                   |version of registered api service            |v1beta1                                   |
 |image.repository                     |admission-server image repo                  |banzaicloud/anchore-image-validator       |
-|image.tag                            |admission-server image tag                   |0.3.6                                     |
+|image.tag                            |admission-server image tag                   |0.4.3                                     |
 |image.pullPolicy                     |admission-server image pull policy           |IfNotPresent                              |
 |service.name                         |validation sevice name                       |anchoreimagecheck                         |
 |service.type                         |validation service type                      |ClusterIP                                 |
@@ -51,4 +51,6 @@ The following tables lists configurable parameters of the anchore-policy-validat
 |externalAnchore.anchorePass          |external anchore-engine password             |""                                        |
 |rbac.enabled                         |enable RBAC                                  |true                                      |
 |rbac.psp.enabled                     |add PSP resources if enabled                 |false                                     |
-|namespaceSelector                    |webHookConfig namespaceSelector behaviour    |"" (exclude)                              |
+|namespaceSelector                    |webHookConfig additional namespaceSelector behaviour|{}                                 |
+|objectSelector                       |webHookConfig additional objectSelector behaviour|{}                                    |
+|insecureSkipTLSVerify                |skip TLS Verify                              |false                                     |
