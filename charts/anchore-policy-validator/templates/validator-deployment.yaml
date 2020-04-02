@@ -44,7 +44,7 @@ spec:
           - "/usr/local/bin/anchore-image-validator"
           env:
           - name: ANCHORE_ENGINE_INSECURE
-            value: {{ quote .Values.insecureSkipTLSVerify }}
+            value: {{ quote .Values.externalAnchore.insecureSkipVerify }}
           - name: KUBERNETES_NAMESPACE
             value: {{ .Release.Namespace }}
           - name: ANCHORE_APISERVICE_GROUP

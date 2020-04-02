@@ -37,7 +37,7 @@ spec:
           value: {{ .Values.externalAnchore.anchorePass }}
         - name: ANCHORE_CLI_URL
           value: {{ .Values.externalAnchore.anchoreHost }}
-        {{- if .Values.insecureSkipTLSVerify }}
+        {{- if .Values.externalAnchore.insecureSkipVerify }}
         - name: ANCHORE_CLI_SSL_VERIFY
           value: "n"
         {{- end }}
