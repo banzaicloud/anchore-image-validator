@@ -16,6 +16,7 @@ externalAnchore:
   anchoreHost: ""
   anchoreUser: ""
   anchorePass: ""
+  insecureSkipVerify: false
 resources: {}
 
 namespaceSelector: {}
@@ -38,5 +39,3 @@ rbac:
   enabled: true
   psp:
     enabled: false
-
-insecureSkipTLSVerify: false

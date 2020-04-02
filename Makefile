@@ -18,7 +18,7 @@ ifeq (${VERBOSE}, 1)
 endif
 
 # Docker variables
-DOCKER_TAG ?= ${VERSION}
+DOCKER_TAG ?= $(shell echo ${VERSION} | sed 's/\//-/')
 
 # Dependency versions
 GOLANGCI_VERSION = 1.21.0
