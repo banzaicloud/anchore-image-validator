@@ -1,3 +1,4 @@
+{{ if .Values.createPolicies }}
 {{- $anchoreEngineValues := index .Values "anchore-engine" }}
 apiVersion: batch/v1
 kind: Job
@@ -64,3 +65,4 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
     {{- end }}
+{{ end }}

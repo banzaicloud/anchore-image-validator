@@ -39,3 +39,5 @@ rbac:
   enabled: true
   psp:
     enabled: false
+
+createPolicies: false
