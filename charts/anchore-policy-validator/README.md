@@ -16,7 +16,7 @@ $ helm install --name <name> --set externalAnchore.anchoreHost=<my.anchore.host>
 ```
 
 
-During deploying this chart, it's creating predefined policy bundles and activates `AllowAll` by default.
+During deploying this chart, it's creating predefined policy bundles and activates `AllowAll` by default if `createPolicies` flag is set.
 
 ## Policy bundles
 
@@ -54,3 +54,4 @@ The following tables lists configurable parameters of the anchore-policy-validat
 |rbac.psp.enabled                     |add PSP resources if enabled                 |false                                     |
 |namespaceSelector                    |webHookConfig additional namespaceSelector behaviour|{}                                 |
 |objectSelector                       |webHookConfig additional objectSelector behaviour|{}                                    |
+|createPolicies                       |create some predifined policy bundles        |false                                     |
