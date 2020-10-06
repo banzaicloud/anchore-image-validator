@@ -5,7 +5,7 @@ This chart deploys an admission-server that is used as a ValidatingWebhook in a 
 ## Installing the Chart
 
 ```bash
-$ helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+$ helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
 $ helm repo update
 ```
 
