@@ -2,8 +2,8 @@ name: Lint and Test Charts
 on:
   pull_request:
     branches: [master]
-    paths:
-      - 'charts/**'
+    # paths:
+    #   - 'charts/**'
 
 jobs:
 
