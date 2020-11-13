@@ -1,7 +1,5 @@
 name: Docker Build
 on:
-  pull_request:
-    branches: [master]
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
