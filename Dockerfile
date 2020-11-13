@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine AS builder
+FROM golang:1.14-alpine AS builder
 
 RUN apk add --update --no-cache ca-certificates git
 
@@ -8,9 +8,9 @@ WORKDIR /build
 COPY go.* /build/
 RUN go mod download
 COPY . /build
-RUN go install ./cmd 
+RUN go install ./cmd
 
-FROM alpine:3.10
+FROM alpine:3.12
 
 COPY --from=builder /go/bin/cmd /usr/local/bin/anchore-image-validator
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
