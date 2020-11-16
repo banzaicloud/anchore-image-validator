@@ -1,14 +1,15 @@
 apiVersion: v1
 description: A Helm chart for anchore-policy-validator admission controller
 name: anchore-policy-validator
-version: 0.6.0
-appVersion: 0.4.3
+version: 0.6.1
+appVersion: 0.4.4
 keywords:
  - analysis
  - "anchore-policy-validator"
  - image
  - security
+home: https://github.com/banzaicloud/anchore-image-validator
 maintainers:
-- name: Banzai Cloud
+- name: BanzaiCloud
   email: info@banzaicloud.com
 engine: gotpl

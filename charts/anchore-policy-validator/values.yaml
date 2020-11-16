@@ -4,8 +4,8 @@ apiService:
   group: admission.anchore.io
   version: v1beta1
 image:
-  repository: banzaicloud/anchore-image-validator
-  tag: 0.4.3
+  repository: ghcr.io/banzaicloud/anchore-image-validator
+  tag: 0.4.4
   pullPolicy: IfNotPresent
 service:
   name: anchoreimagecheck
