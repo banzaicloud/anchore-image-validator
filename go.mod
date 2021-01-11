@@ -1,6 +1,6 @@
 module github.com/banzaicloud/anchore-image-validator
 
-go 1.14
+go 1.15
 
 require (
 	emperror.dev/emperror v0.32.0
