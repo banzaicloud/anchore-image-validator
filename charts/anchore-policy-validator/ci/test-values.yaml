@@ -1,0 +1,43 @@
+replicaCount: 1
+logVerbosity: 1
+apiService:
+  group: admission.anchore.io
+  version: v1beta1
+image:
+  repository: ghcr.io/banzaicloud/anchore-image-validator
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  name: anchoreimagecheck
+  type: ClusterIP
+  externalPort: 443
+  internalPort: 8443
+externalAnchore:
+  anchoreHost: ""
+  anchoreUser: ""
+  anchorePass: ""
+  insecureSkipVerify: false
+resources: {}
+
+namespaceSelector: {}
+
+objectSelector: {}
+
+## Node selector
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+nodeSelector: {}
+
+## Affinity
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+
+## Tolerations
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+rbac:
+  enabled: true
+  psp:
+    enabled: false
+
+createPolicies: false
