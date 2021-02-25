@@ -95,7 +95,7 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 func getStatus(digest string, tag string) bool {
 	params := url.Values{}
 	params.Add("history", "false")
-	params.Add("datall", "false")
+	params.Add("detail", "false")
 	params.Add("tag", tag)
 
 	path := fmt.Sprintf("/v1/images/%s/check?%s", digest, params.Encode())
