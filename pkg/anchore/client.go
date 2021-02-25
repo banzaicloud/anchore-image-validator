@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
@@ -64,7 +65,7 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	logrus.WithFields(logrus.Fields{
 		"url":        fullURL,
 		"bodyParams": bodyParams,
-	}).Info("Sending request")
+	}).Debug("Sending request")
 
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.Do(req)
@@ -78,7 +79,7 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 
 	logrus.WithFields(logrus.Fields{
 		"response": string(bodyText),
-	}).Info("Anchore Response Body")
+	}).Debug("Anchore Response Body")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to complete request to Anchore: %v", err)
@@ -113,9 +114,42 @@ func getStatus(digest string, tag string) bool {
 	return result[0][digest][resultIndex][0].Status == "pass"
 }
 
+func getImage(imageRef string) (Image, error) {
+	params := url.Values{}
+	params.Add("fulltag", imageRef)
+	params.Add("history", "false")
+	path := fmt.Sprintf("/v1/images?%s", params.Encode())
+
+	body, err := anchoreRequest(path, nil, "GET")
+
+	if err != nil {
+		return Image{}, err
+	}
+
+	var images []Image
+	err = json.Unmarshal(body, &images)
+	if err != nil {
+		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %v", err)
+	}
+
+	return images[0], nil
+}
+
 func getOrAddImage(imageRef string) (Image, error) {
+	image, err := getImage(imageRef)
+	if err == nil {
+		logrus.WithFields(logrus.Fields{
+			"Image": imageRef,
+		}).Info("Image has already sent to scan")
+		return image, nil
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"Image": imageRef,
+	}).Info("Image hasn't sent to scan yet, sending it")
+
 	params := map[string]string{"tag": imageRef}
-	body, err := anchoreRequest("/v1/images?history=false", params, "POST")
+	body, err := anchoreRequest("/v1/images", params, "POST")
 
 	if err != nil {
 		return Image{}, err
@@ -130,7 +164,7 @@ func getOrAddImage(imageRef string) (Image, error) {
 
 	logrus.WithFields(logrus.Fields{
 		"Image": images[0],
-	}).Info("Get or Added image")
+	}).Debug("Image to add")
 
 	return images[0], nil
 }
