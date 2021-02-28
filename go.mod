@@ -5,6 +5,7 @@ go 1.15
 require (
 	emperror.dev/emperror v0.32.0
 	emperror.dev/errors v0.7.0
+	github.com/dgraph-io/ristretto v0.0.3
 	github.com/docker/distribution v0.0.0-20200213211116-66809646d941
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect

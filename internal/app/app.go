@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/dgraph-io/ristretto"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,9 +41,9 @@ var (
 )
 
 // NewApp creates new application
-func NewApp(logger logur.Logger, client client.Client) http.Handler {
+func NewApp(logger logur.Logger, client client.Client, cache *ristretto.Cache) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(imageValidate, newHTTPHandler(logger, client))
+	mux.Handle(imageValidate, newHTTPHandler(logger, client, cache))
 	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
 
 	return mux
@@ -52,12 +53,13 @@ func NewApp(logger logur.Logger, client client.Client) http.Handler {
 type HTTPController struct {
 	Logger logur.Logger
 	Client client.Client
+	Cache  *ristretto.Cache
 }
 
 // NewHTTPHandler returns a new HTTP handler for the greeter.
-func newHTTPHandler(logger logur.Logger, client client.Client) http.Handler {
+func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.Cache) http.Handler {
 	mux := http.NewServeMux()
-	controller := NewHTTPController(logger, client)
+	controller := NewHTTPController(logger, client, cache)
 	mux.HandleFunc(imageValidate, controller.webhookCTRL)
 	logger.Info("newHTTPHandler", map[string]interface{}{"handler": imageValidate})
 
@@ -65,10 +67,11 @@ func newHTTPHandler(logger logur.Logger, client client.Client) http.Handler {
 }
 
 // NewHTTPController returns a new HTTPController instance.
-func NewHTTPController(logger logur.Logger, client client.Client) *HTTPController {
+func NewHTTPController(logger logur.Logger, client client.Client, cache *ristretto.Cache) *HTTPController {
 	return &HTTPController{
 		Logger: logger,
 		Client: client,
+		Cache:  cache,
 	}
 }
 
@@ -106,7 +109,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
-			admissionResponse = validate(&ar, a.Logger, a.Client)
+			admissionResponse = validate(&ar, a.Logger, a.Client, a.Cache)
 		}
 	}
 

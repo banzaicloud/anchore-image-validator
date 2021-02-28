@@ -19,9 +19,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/banzaicloud/anchore-image-validator/pkg/anchore"
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
+	"github.com/dgraph-io/ristretto"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +32,7 @@ import (
 )
 
 func validate(ar *admissionv1beta1.AdmissionReview,
-	logger logur.Logger, c client.Client) *admissionv1beta1.AdmissionResponse {
+	logger logur.Logger, c client.Client, cache *ristretto.Cache) *admissionv1beta1.AdmissionResponse {
 	req := ar.Request
 
 	logger.Info("AdmissionReview for", map[string]interface{}{
@@ -63,7 +65,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
-		return checkImage(&pod, whitelists, logger, c)
+		return checkImage(&pod, whitelists, logger, c, cache)
 	}
 
 	return &admissionv1beta1.AdmissionResponse{
@@ -79,7 +81,8 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 func checkImage(pod *v1.Pod,
 	wl *v1alpha1.WhiteListItemList,
 	logger logur.Logger,
-	c client.Client) *admissionv1beta1.AdmissionResponse {
+	c client.Client,
+	cache *ristretto.Cache) *admissionv1beta1.AdmissionResponse {
 	result := []string{}
 	auditImages := []v1alpha1.AuditImage{}
 	message := ""
@@ -102,7 +105,28 @@ func checkImage(pod *v1.Pod,
 			"image": image,
 		})
 
-		auditImage, ok := anchore.CheckImage(image)
+		// if in the cache pass a bool
+		// if in the whitelist run in go thread
+		isCached := false
+
+		logger.Info("Checking cache", map[string]interface{}{
+			"PodName": pod.Name,
+		})
+
+		_, found := cache.Get(image)
+		if found {
+			logger.Info("Cache found", map[string]interface{}{
+				"image": image,
+			})
+			isCached = true
+		} else {
+			logger.Info("Cache miss", map[string]interface{}{
+				"image": image,
+			})
+			cache.SetWithTTL(image, "scanned", 100, time.Duration(30)*time.Minute)
+		}
+
+		auditImage, ok := anchore.CheckImage(image, isCached)
 
 		if !ok {
 			resp.Result.Status = "Failure"

@@ -24,6 +24,7 @@ import (
 	"github.com/banzaicloud/anchore-image-validator/internal/app"
 	"github.com/banzaicloud/anchore-image-validator/internal/log"
 	"github.com/banzaicloud/anchore-image-validator/pkg/apis/security/v1alpha1"
+	"github.com/dgraph-io/ristretto"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -94,10 +95,20 @@ func main() {
 		"keyfile":  config.App.KeyFile,
 	})
 
+	// create cache object
+	cache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: 10000,     // number of keys to track frequency of (10k).
+		MaxCost:     100000000, // maximum cost of cache (100MB).
+		BufferItems: 64,        // number of keys per Get buffer.
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	if viper.GetBool("dev-http") {
-		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client))
+		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, cache))
 	} else {
-		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client))
+		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, cache))
 	}
 }
 
