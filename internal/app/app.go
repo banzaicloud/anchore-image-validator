@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/dgraph-io/ristretto"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -41,9 +42,9 @@ var (
 )
 
 // NewApp creates new application
-func NewApp(logger logur.Logger, client client.Client, cache *ristretto.Cache) http.Handler {
+func NewApp(logger logur.Logger, client client.Client, cache *ristretto.Cache, cacheTTL time.Duration) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(imageValidate, newHTTPHandler(logger, client, cache))
+	mux.Handle(imageValidate, newHTTPHandler(logger, client, cache, cacheTTL))
 	logger.Info("newApp", map[string]interface{}{"app": imageValidate})
 
 	return mux
@@ -51,15 +52,16 @@ func NewApp(logger logur.Logger, client client.Client, cache *ristretto.Cache) h
 
 // HTTPController collects the greeting use cases and exposes them as HTTP handlers.
 type HTTPController struct {
-	Logger logur.Logger
-	Client client.Client
-	Cache  *ristretto.Cache
+	Logger   logur.Logger
+	Client   client.Client
+	Cache    *ristretto.Cache
+	CacheTTL time.Duration
 }
 
 // NewHTTPHandler returns a new HTTP handler for the greeter.
-func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.Cache) http.Handler {
+func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.Cache, cacheTTL time.Duration) http.Handler {
 	mux := http.NewServeMux()
-	controller := NewHTTPController(logger, client, cache)
+	controller := NewHTTPController(logger, client, cache, cacheTTL)
 	mux.HandleFunc(imageValidate, controller.webhookCTRL)
 	logger.Info("newHTTPHandler", map[string]interface{}{"handler": imageValidate})
 
@@ -67,11 +69,12 @@ func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.
 }
 
 // NewHTTPController returns a new HTTPController instance.
-func NewHTTPController(logger logur.Logger, client client.Client, cache *ristretto.Cache) *HTTPController {
+func NewHTTPController(logger logur.Logger, client client.Client, cache *ristretto.Cache, cacheTTL time.Duration) *HTTPController {
 	return &HTTPController{
-		Logger: logger,
-		Client: client,
-		Cache:  cache,
+		Logger:   logger,
+		Client:   client,
+		Cache:    cache,
+		CacheTTL: cacheTTL,
 	}
 }
 
@@ -109,7 +112,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
-			admissionResponse = validate(&ar, a.Logger, a.Client, a.Cache)
+			admissionResponse = validate(&ar, a.Logger, a.Client, a.Cache, a.CacheTTL)
 		}
 	}
 

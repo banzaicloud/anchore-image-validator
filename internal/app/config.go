@@ -22,4 +22,6 @@ type Config struct {
 	CertFile string
 	// KeyFile server key path
 	KeyFile string
+	// CacheTTL
+	CacheTTL string
 }

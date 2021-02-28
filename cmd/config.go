@@ -49,6 +49,7 @@ func configure(v *viper.Viper, p *pflag.FlagSet) {
 	v.SetDefault("app.port", 8443)
 	v.SetDefault("app.certfile", "/webhook/certs/tls.crt")
 	v.SetDefault("app.keyfile", "/webhook/certs/tls.key")
+	v.SetDefault("app.cacheTTL", "30m")
 
 	v.AllowEmptyEnv(true)
 	v.SetEnvPrefix("imagecheck")
