@@ -65,6 +65,25 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
+		r, f := getReleaseName(pod.Labels, pod.Name)
+
+		if checkWhiteList(whitelists.Items, r, f) {
+			logger.Info("Whitelisted release", map[string]interface{}{
+				"PodName": pod.Name,
+			})
+
+			go checkImage(&pod, whitelists, logger, c, cache)
+
+			return &admissionv1beta1.AdmissionResponse{
+				Allowed: true,
+				Result: &metav1.Status{
+					Status:  "Success",
+					Reason:  "",
+					Message: "Whitelisted release",
+				},
+			}
+		}
+
 		return checkImage(&pod, whitelists, logger, c, cache)
 	}
 
@@ -105,10 +124,7 @@ func checkImage(pod *v1.Pod,
 			"image": image,
 		})
 
-		// if in the cache pass a bool
-		// if in the whitelist run in go thread
 		isCached := false
-
 		logger.Info("Checking cache", map[string]interface{}{
 			"PodName": pod.Name,
 		})
@@ -131,15 +147,6 @@ func checkImage(pod *v1.Pod,
 		if !ok {
 			resp.Result.Status = "Failure"
 			resp.Allowed = false
-
-			if checkWhiteList(wl.Items, r, f) {
-				resp.Result.Status = "Success"
-				resp.Allowed = true
-
-				logger.Info("Whitelisted release", map[string]interface{}{
-					"PodName": pod.Name,
-				})
-			}
 			message = fmt.Sprintf("Image failed policy check: %s", image)
 			resp.Result.Message = message
 
