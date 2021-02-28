@@ -32,7 +32,7 @@ import (
 )
 
 func validate(ar *admissionv1beta1.AdmissionReview,
-	logger logur.Logger, c client.Client, cache *ristretto.Cache) *admissionv1beta1.AdmissionResponse {
+	logger logur.Logger, c client.Client, cache *ristretto.Cache, cacheTTL time.Duration) *admissionv1beta1.AdmissionResponse {
 	req := ar.Request
 
 	logger.Info("AdmissionReview for", map[string]interface{}{
@@ -72,7 +72,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 				"PodName": pod.Name,
 			})
 
-			go checkImage(&pod, whitelists, logger, c, cache)
+			go checkImage(&pod, whitelists, logger, c, cache, cacheTTL)
 
 			return &admissionv1beta1.AdmissionResponse{
 				Allowed: true,
@@ -84,7 +84,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
-		return checkImage(&pod, whitelists, logger, c, cache)
+		return checkImage(&pod, whitelists, logger, c, cache, cacheTTL)
 	}
 
 	return &admissionv1beta1.AdmissionResponse{
@@ -101,7 +101,8 @@ func checkImage(pod *v1.Pod,
 	wl *v1alpha1.WhiteListItemList,
 	logger logur.Logger,
 	c client.Client,
-	cache *ristretto.Cache) *admissionv1beta1.AdmissionResponse {
+	cache *ristretto.Cache,
+	cacheTTL time.Duration) *admissionv1beta1.AdmissionResponse {
 	result := []string{}
 	auditImages := []v1alpha1.AuditImage{}
 	message := ""
@@ -139,7 +140,7 @@ func checkImage(pod *v1.Pod,
 			logger.Info("Cache miss", map[string]interface{}{
 				"image": image,
 			})
-			cache.SetWithTTL(image, "scanned", 100, time.Duration(30)*time.Minute)
+			cache.SetWithTTL(image, "scanned", 100, cacheTTL)
 		}
 
 		auditImage, ok := anchore.CheckImage(image, isCached)

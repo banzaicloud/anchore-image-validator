@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"emperror.dev/emperror"
 	"emperror.dev/errors"
@@ -93,6 +94,7 @@ func main() {
 		"port":     ":" + config.App.Port,
 		"certfile": config.App.CertFile,
 		"keyfile":  config.App.KeyFile,
+		"cacheTTL": config.App.CacheTTL,
 	})
 
 	// create cache object
@@ -105,10 +107,19 @@ func main() {
 		panic(err)
 	}
 
+	var cacheTTL time.Duration
+	cacheTTL, err = time.ParseDuration(config.App.CacheTTL)
+	if err != nil {
+		logger.Error("parse cacheTTL failed", map[string]interface{}{
+			"cacheTTL": config.App.CacheTTL},
+		)
+		cacheTTL = time.Duration(30) * time.Minute
+	}
+
 	if viper.GetBool("dev-http") {
-		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, cache))
+		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, cache, cacheTTL))
 	} else {
-		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, cache))
+		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, cache, cacheTTL))
 	}
 }
 
