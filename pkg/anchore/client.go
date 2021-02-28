@@ -141,19 +141,7 @@ func getImage(imageRef string) (Image, error) {
 	return images[0], nil
 }
 
-func getOrAddImage(imageRef string) (Image, error) {
-	image, err := getImage(imageRef)
-	if err == nil {
-		logrus.WithFields(logrus.Fields{
-			"Image": imageRef,
-		}).Info("Image has already sent to scan")
-		return image, nil
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"Image": imageRef,
-	}).Info("Image hasn't sent to scan yet, sending it")
-
+func addImage(imageRef string) (Image, error) {
 	params := map[string]string{"tag": imageRef}
 	body, err := anchoreRequest("/v1/images", params, "POST")
 
@@ -175,8 +163,17 @@ func getOrAddImage(imageRef string) (Image, error) {
 	return images[0], nil
 }
 
-func getImageDigest(imageRef string) (string, error) {
-	image, err := getOrAddImage(imageRef)
+func getImageDigest(imageRef string, isCached bool) (string, error) {
+	if isCached {
+		image, err := getImage(imageRef)
+		if err != nil {
+			return "", fmt.Errorf("failed to get image digest: %v", err)
+		}
+
+		return image.ImageDigest, nil
+	}
+
+	image, err := addImage(imageRef)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to get image digest: %v", err)
@@ -186,7 +183,7 @@ func getImageDigest(imageRef string) (string, error) {
 }
 
 //CheckImage checking Image with Anchore
-func CheckImage(image string) (v1alpha1.AuditImage, bool) {
+func CheckImage(image string, isCached bool) (v1alpha1.AuditImage, bool) {
 	ref, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		logrus.Error(err)
@@ -200,7 +197,7 @@ func CheckImage(image string) (v1alpha1.AuditImage, bool) {
 		"image_tag":  imageTag,
 	}).Info("Checking image")
 
-	digest, err := getImageDigest(image)
+	digest, err := getImageDigest(image, isCached)
 
 	if err != nil {
 		return v1alpha1.AuditImage{}, false
