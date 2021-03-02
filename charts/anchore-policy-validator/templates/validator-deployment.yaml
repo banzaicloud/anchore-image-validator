@@ -59,6 +59,10 @@ spec:
             value: {{ .Values.externalAnchore.anchorePass }}
           - name: ANCHORE_ENGINE_URL
             value: {{ .Values.externalAnchore.anchoreHost }}
+          {{- if .Values.config.app.cacheTTL }}
+          - name: IMAGECHECK_APP_CACHETTL
+            value: {{ .Values.config.app.cacheTTL }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
           securityContext:

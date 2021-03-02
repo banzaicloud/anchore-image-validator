@@ -41,3 +41,7 @@ rbac:
     enabled: false
 
 createPolicies: false
+
+config:
+  app:
+    cacheTTL: "6h"
