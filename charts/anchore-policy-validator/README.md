@@ -55,4 +55,4 @@ The following tables lists configurable parameters of the anchore-policy-validat
 |namespaceSelector                    |webHookConfig additional namespaceSelector behaviour|{}                                 |
 |objectSelector                       |webHookConfig additional objectSelector behaviour|{}                                    |
 |createPolicies                       |create some predifined policy bundles        |false                                     |
-|config.app.cacheTTL                  |setup cacehTTL                               |6h                                        |
+|config.app.cacheTTL                  |duration between resubmissions of an image   |6h                                        |
