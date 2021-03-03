@@ -103,7 +103,7 @@ func checkImage(pod *v1.Pod,
 	c client.Client,
 	cache *ristretto.Cache,
 	cacheTTL time.Duration,
-	isWl bool) *admissionv1beta1.AdmissionResponse {
+	isWhiteListed bool) *admissionv1beta1.AdmissionResponse {
 	result := []string{}
 	auditImages := []v1alpha1.AuditImage{}
 	message := ""
@@ -133,18 +133,18 @@ func checkImage(pod *v1.Pod,
 
 		_, found := cache.Get(image)
 		if found {
-			logger.Debug("Cache found", map[string]interface{}{
+			logger.Debug("not submitting for scan again within ttl", map[string]interface{}{
 				"image": image,
 			})
 			isCached = true
 		} else {
-			logger.Debug("Cache miss", map[string]interface{}{
+			logger.Debug("submitting for scan the first time within ttl", map[string]interface{}{
 				"image": image,
 			})
-			cache.SetWithTTL(image, "scanned", 100, cacheTTL)
+			cache.SetWithTTL(image, "submitted", 100, cacheTTL)
 		}
 
-		auditImage, ok := anchore.CheckImage(image, isCached, isWl)
+		auditImage, ok := anchore.CheckImage(image, isCached, isWhiteListed)
 
 		if !ok {
 			resp.Result.Status = "Failure"
@@ -156,9 +156,9 @@ func checkImage(pod *v1.Pod,
 				"image": image,
 			})
 		} else {
-			if isWl {
+			if isWhiteListed {
 				message = fmt.Sprintf("Whitelisted release: %s", image)
-				logger.Warn("Whitelistetd release", map[string]interface{}{
+				logger.Info("skipping policy enforcement for whitelisted release", map[string]interface{}{
 					"image": image,
 				})
 			} else {
