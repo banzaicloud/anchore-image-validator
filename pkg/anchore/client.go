@@ -183,7 +183,7 @@ func getImageDigest(imageRef string, isCached bool) (string, error) {
 }
 
 //CheckImage checking Image with Anchore
-func CheckImage(image string, isCached bool, isWl bool) (v1alpha1.AuditImage, bool) {
+func CheckImage(image string, isCached bool, isWhiteListed bool) (v1alpha1.AuditImage, bool) {
 	ref, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		logrus.Error(err)
@@ -210,7 +210,7 @@ func CheckImage(image string, isCached bool, isWl bool) (v1alpha1.AuditImage, bo
 		LastUpdated: lastUpdated,
 	}
 
-	if isWl {
+	if isWhiteListed {
 		return auditImage, true
 	}
 
