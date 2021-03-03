@@ -72,7 +72,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 				"PodName": pod.Name,
 			})
 
-			go checkImage(&pod, whitelists, logger, c, cache, cacheTTL)
+			go checkImage(&pod, whitelists, logger, c, cache, cacheTTL, true)
 
 			return &admissionv1beta1.AdmissionResponse{
 				Allowed: true,
@@ -84,7 +84,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
-		return checkImage(&pod, whitelists, logger, c, cache, cacheTTL)
+		return checkImage(&pod, whitelists, logger, c, cache, cacheTTL, false)
 	}
 
 	return &admissionv1beta1.AdmissionResponse{
@@ -102,7 +102,8 @@ func checkImage(pod *v1.Pod,
 	logger logur.Logger,
 	c client.Client,
 	cache *ristretto.Cache,
-	cacheTTL time.Duration) *admissionv1beta1.AdmissionResponse {
+	cacheTTL time.Duration,
+	isWl bool) *admissionv1beta1.AdmissionResponse {
 	result := []string{}
 	auditImages := []v1alpha1.AuditImage{}
 	message := ""
@@ -126,24 +127,24 @@ func checkImage(pod *v1.Pod,
 		})
 
 		isCached := false
-		logger.Info("Checking cache", map[string]interface{}{
+		logger.Debug("Checking cache", map[string]interface{}{
 			"PodName": pod.Name,
 		})
 
 		_, found := cache.Get(image)
 		if found {
-			logger.Info("Cache found", map[string]interface{}{
+			logger.Debug("Cache found", map[string]interface{}{
 				"image": image,
 			})
 			isCached = true
 		} else {
-			logger.Info("Cache miss", map[string]interface{}{
+			logger.Debug("Cache miss", map[string]interface{}{
 				"image": image,
 			})
 			cache.SetWithTTL(image, "scanned", 100, cacheTTL)
 		}
 
-		auditImage, ok := anchore.CheckImage(image, isCached)
+		auditImage, ok := anchore.CheckImage(image, isCached, isWl)
 
 		if !ok {
 			resp.Result.Status = "Failure"
@@ -155,11 +156,17 @@ func checkImage(pod *v1.Pod,
 				"image": image,
 			})
 		} else {
-			message = fmt.Sprintf("Image passed policy check: %s", image)
-
-			logger.Warn("Image passed policy check", map[string]interface{}{
-				"image": image,
-			})
+			if isWl {
+				message = fmt.Sprintf("Whitelisted release: %s", image)
+				logger.Warn("Whitelistetd release", map[string]interface{}{
+					"image": image,
+				})
+			} else {
+				message = fmt.Sprintf("Image passed policy check: %s", image)
+				logger.Warn("Image passed policy check", map[string]interface{}{
+					"image": image,
+				})
+			}
 		}
 
 		result = append(result, message)
