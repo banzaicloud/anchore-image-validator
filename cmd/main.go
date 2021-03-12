@@ -46,15 +46,17 @@ func main() {
 	pflag.Parse()
 
 	if viper.GetBool("version") {
+		// nolint: forbidigo
 		fmt.Printf("%s version %s (%s) built on %s\n", "anchore-image-validator", version, commitHash, buildDate)
 
 		os.Exit(0)
 	}
 
 	err := viper.ReadInConfig()
-	_, configFileNotFound := err.(viper.ConfigFileNotFoundError)
 
-	if !configFileNotFound {
+	var configFileNotFound viper.ConfigFileNotFoundError
+
+	if !errors.As(err, &configFileNotFound) {
 		emperror.Panic(errors.Wrap(err, "failed to read configuration"))
 	}
 
@@ -66,6 +68,7 @@ func main() {
 	}
 
 	if viper.GetBool("dump-config") {
+		// nolint: forbidigo
 		fmt.Printf("%+v\n", config)
 
 		os.Exit(0)
@@ -80,14 +83,16 @@ func main() {
 	k8sCfg := crconfig.GetConfigOrDie()
 
 	logger.Debug("kubernetes config", map[string]interface{}{
-		"k8sHost": k8sCfg.Host})
+		"k8sHost": k8sCfg.Host,
+	})
 
 	v1alpha1.AddToScheme(scheme.Scheme)
 
 	client, err := crclient.New(k8sCfg, crclient.Options{})
 	if err != nil {
 		logger.Error("get clisntset failed", map[string]interface{}{
-			"k8sHost": k8sCfg.Host})
+			"k8sHost": k8sCfg.Host,
+		})
 	}
 
 	logger.Info("starting the webhook.", map[string]interface{}{
@@ -108,18 +113,25 @@ func main() {
 	}
 
 	var cacheTTL time.Duration
+
 	cacheTTL, err = time.ParseDuration(config.App.CacheTTL)
+
 	if err != nil {
 		logger.Error("parse cacheTTL failed", map[string]interface{}{
-			"cacheTTL": config.App.CacheTTL},
+			"cacheTTL": config.App.CacheTTL,
+		},
 		)
+
 		cacheTTL = time.Duration(30) * time.Minute
 	}
 
 	if viper.GetBool("dev-http") {
 		http.ListenAndServe(":"+config.App.Port, app.NewApp(logger, client, cache, cacheTTL))
 	} else {
-		http.ListenAndServeTLS(":"+config.App.Port, config.App.CertFile, config.App.KeyFile, app.NewApp(logger, client, cache, cacheTTL))
+		http.ListenAndServeTLS(":"+config.App.Port,
+			config.App.CertFile,
+			config.App.KeyFile,
+			app.NewApp(logger, client, cache, cacheTTL))
 	}
 }
 

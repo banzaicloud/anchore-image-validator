@@ -32,14 +32,18 @@ import (
 )
 
 func validate(ar *admissionv1beta1.AdmissionReview,
-	logger logur.Logger, c client.Client, cache *ristretto.Cache, cacheTTL time.Duration) *admissionv1beta1.AdmissionResponse {
+	logger logur.Logger,
+	c client.Client,
+	cache *ristretto.Cache,
+	cacheTTL time.Duration) *admissionv1beta1.AdmissionResponse {
 	req := ar.Request
 
 	logger.Info("AdmissionReview for", map[string]interface{}{
 		"Kind":      req.Kind,
 		"Namespsce": req.Namespace,
 		"Resource":  req.Resource,
-		"UserInfo":  req.UserInfo})
+		"UserInfo":  req.UserInfo,
+	})
 
 	if req.Kind.Kind == "Pod" {
 		whitelists := &v1alpha1.WhiteListItemList{}
@@ -72,7 +76,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 				"PodName": pod.Name,
 			})
 
-			go checkImage(&pod, whitelists, logger, c, cache, cacheTTL, true)
+			go checkImage(&pod, logger, c, cache, cacheTTL, true)
 
 			return &admissionv1beta1.AdmissionResponse{
 				Allowed: true,
@@ -84,7 +88,7 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 			}
 		}
 
-		return checkImage(&pod, whitelists, logger, c, cache, cacheTTL, false)
+		return checkImage(&pod, logger, c, cache, cacheTTL, false)
 	}
 
 	return &admissionv1beta1.AdmissionResponse{
@@ -98,7 +102,6 @@ func validate(ar *admissionv1beta1.AdmissionReview,
 }
 
 func checkImage(pod *v1.Pod,
-	wl *v1alpha1.WhiteListItemList,
 	logger logur.Logger,
 	c client.Client,
 	cache *ristretto.Cache,
@@ -106,7 +109,8 @@ func checkImage(pod *v1.Pod,
 	isWhiteListed bool) *admissionv1beta1.AdmissionResponse {
 	result := []string{}
 	auditImages := []v1alpha1.AuditImage{}
-	message := ""
+
+	var message string
 
 	resp := &admissionv1beta1.AdmissionResponse{
 		Allowed: true,
@@ -127,6 +131,7 @@ func checkImage(pod *v1.Pod,
 		})
 
 		isCached := false
+
 		logger.Debug("Checking cache", map[string]interface{}{
 			"PodName": pod.Name,
 		})
@@ -136,6 +141,7 @@ func checkImage(pod *v1.Pod,
 			logger.Debug("not submitting for scan again within ttl", map[string]interface{}{
 				"image": image,
 			})
+
 			isCached = true
 		} else {
 			logger.Debug("submitting for scan the first time within ttl", map[string]interface{}{
@@ -184,6 +190,7 @@ func checkImage(pod *v1.Pod,
 	}
 
 	owners := pod.GetOwnerReferences()
+
 	var auditName string
 
 	if len(owners) > 0 {
