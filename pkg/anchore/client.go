@@ -43,19 +43,18 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
+				// nolint: gosec
 				InsecureSkipVerify: insecure,
 			},
 		},
 	}
 
 	bodyParamJSON, err := json.Marshal(bodyParams)
-
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(bodyParamJSON))
-
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -68,10 +67,10 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	}).Debug("Sending request")
 
 	req.Header.Add("Content-Type", "application/json")
-	resp, err := client.Do(req)
 
+	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to complete request to Anchore: %v", err)
+		return nil, fmt.Errorf("failed to complete request to Anchore: %w", err)
 	}
 
 	bodyText, err := ioutil.ReadAll(resp.Body)
@@ -82,10 +81,11 @@ func anchoreRequest(path string, bodyParams map[string]string, method string) ([
 	}).Debug("Anchore Response Body")
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to complete request to Anchore: %v", err)
+		return nil, fmt.Errorf("failed to complete request to Anchore: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
+		// nolint: goerr113
 		return nil, fmt.Errorf("response from Anchore: %d", resp.StatusCode)
 	}
 
@@ -101,9 +101,9 @@ func getStatus(digest string, tag string) bool {
 	path := fmt.Sprintf("/v1/images/%s/check?%s", digest, params.Encode())
 
 	body, err := anchoreRequest(path, nil, "GET")
-
 	if err != nil {
 		logrus.Error(err)
+
 		return false
 	}
 
@@ -112,6 +112,7 @@ func getStatus(digest string, tag string) bool {
 
 	if err != nil {
 		logrus.Error(err)
+
 		return false
 	}
 
@@ -127,15 +128,15 @@ func getImage(imageRef string) (Image, error) {
 	path := fmt.Sprintf("/v1/images?%s", params.Encode())
 
 	body, err := anchoreRequest(path, nil, "GET")
-
 	if err != nil {
 		return Image{}, err
 	}
 
 	var images []Image
+
 	err = json.Unmarshal(body, &images)
 	if err != nil {
-		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %v", err)
+		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %w", err)
 	}
 
 	return images[0], nil
@@ -143,8 +144,8 @@ func getImage(imageRef string) (Image, error) {
 
 func addImage(imageRef string) (Image, error) {
 	params := map[string]string{"tag": imageRef}
-	body, err := anchoreRequest("/v1/images", params, "POST")
 
+	body, err := anchoreRequest("/v1/images", params, "POST")
 	if err != nil {
 		return Image{}, err
 	}
@@ -153,7 +154,7 @@ func addImage(imageRef string) (Image, error) {
 	err = json.Unmarshal(body, &images)
 
 	if err != nil {
-		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %v", err)
+		return Image{}, fmt.Errorf("failed to unmarshal JSON from response: %w", err)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -167,28 +168,29 @@ func getImageDigest(imageRef string, isCached bool) (string, error) {
 	if isCached {
 		image, err := getImage(imageRef)
 		if err != nil {
-			return "", fmt.Errorf("failed to get image digest: %v", err)
+			return "", fmt.Errorf("failed to get image digest: %w", err)
 		}
 
 		return image.ImageDigest, nil
 	}
 
 	image, err := addImage(imageRef)
-
 	if err != nil {
-		return "", fmt.Errorf("failed to get image digest: %v", err)
+		return "", fmt.Errorf("failed to get image digest: %w", err)
 	}
 
 	return image.ImageDigest, nil
 }
 
-//CheckImage checking Image with Anchore
+// CheckImage checking Image with Anchore
 func CheckImage(image string, isCached bool, isWhiteListed bool) (v1alpha1.AuditImage, bool) {
 	ref, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		logrus.Error(err)
+
 		return v1alpha1.AuditImage{}, false
 	}
+
 	imageName := ref.(reference.Named).Name()
 	imageTag := reference.TagNameOnly(ref).(reference.Tagged).Tag()
 
@@ -219,10 +221,11 @@ func CheckImage(image string, isCached bool, isWhiteListed bool) (v1alpha1.Audit
 
 func getImageLastUpdate(digest string) string {
 	path := fmt.Sprintf("/v1/images/%s?history=false&detail=false", digest)
-	body, err := anchoreRequest(path, nil, "GET")
 
+	body, err := anchoreRequest(path, nil, "GET")
 	if err != nil {
 		logrus.Error(err)
+
 		return ""
 	}
 
@@ -231,6 +234,7 @@ func getImageLastUpdate(digest string) string {
 
 	if err != nil {
 		logrus.Error(err)
+
 		return ""
 	}
 

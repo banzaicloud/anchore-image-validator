@@ -132,7 +132,6 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 		logrus.Error(err)
 
 		aCR, err := json.Marshal(auditCR)
-
 		if err != nil {
 			logrus.Error(err)
 		}

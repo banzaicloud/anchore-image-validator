@@ -2,7 +2,7 @@ linters:
     enable-all: true
     disable:
         - maligned
-
+        - godot
         # TODO: fix these issues
         - errcheck
         - unconvert
@@ -12,10 +12,17 @@ linters:
         - golint
         - megacheck
         - goimports
+        - noctx
+        - exhaustivestruct
+        - gomnd
 
 linters-settings:
     golint:
         min-confidence: 0.1
+
+    funlen:
+        lines: 120
+        statements: 50
 
 issues:
     exclude:

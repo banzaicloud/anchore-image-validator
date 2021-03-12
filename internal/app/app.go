@@ -59,7 +59,10 @@ type HTTPController struct {
 }
 
 // NewHTTPHandler returns a new HTTP handler for the greeter.
-func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.Cache, cacheTTL time.Duration) http.Handler {
+func newHTTPHandler(logger logur.Logger,
+	client client.Client,
+	cache *ristretto.Cache,
+	cacheTTL time.Duration) http.Handler {
 	mux := http.NewServeMux()
 	controller := NewHTTPController(logger, client, cache, cacheTTL)
 	mux.HandleFunc(imageValidate, controller.webhookCTRL)
@@ -69,7 +72,10 @@ func newHTTPHandler(logger logur.Logger, client client.Client, cache *ristretto.
 }
 
 // NewHTTPController returns a new HTTPController instance.
-func NewHTTPController(logger logur.Logger, client client.Client, cache *ristretto.Cache, cacheTTL time.Duration) *HTTPController {
+func NewHTTPController(logger logur.Logger,
+	client client.Client,
+	cache *ristretto.Cache,
+	cacheTTL time.Duration) *HTTPController {
 	return &HTTPController{
 		Logger:   logger,
 		Client:   client,
@@ -81,12 +87,14 @@ func NewHTTPController(logger logur.Logger, client client.Client, cache *ristret
 func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		w.WriteHeader(http.StatusOK)
+
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "reading request body failed", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -94,6 +102,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 
 	if len(body) == 0 {
 		http.Error(w, "empty body", http.StatusBadRequest)
+
 		return
 	}
 
@@ -110,6 +119,7 @@ func (a *HTTPController) webhookCTRL(w http.ResponseWriter, r *http.Request) {
 			},
 		}
 	} else {
+		// nolint: forbidigo
 		fmt.Println(r.URL.Path)
 		if r.URL.Path == imageValidate {
 			admissionResponse = validate(&ar, a.Logger, a.Client, a.Cache, a.CacheTTL)
