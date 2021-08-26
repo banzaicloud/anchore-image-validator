@@ -126,7 +126,7 @@ func createOrUpdateAudit(a auditInfo, c client.Client) {
 		},
 	}
 
-	auditCR.SetOwnerReferences(a.owners)
+	// auditCR.SetOwnerReferences(a.owners)
 
 	if err := c.Create(context.Background(), auditCR); err != nil {
 		logrus.Error(err)
