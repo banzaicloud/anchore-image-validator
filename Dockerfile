@@ -10,7 +10,7 @@ RUN go mod download
 COPY . /build
 RUN go install ./cmd
 
-FROM alpine:3.14.1
+FROM alpine:3.14.2
 
 COPY --from=builder /go/bin/cmd /usr/local/bin/anchore-image-validator
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
