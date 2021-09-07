@@ -8,6 +8,8 @@ spec:
         kind: WhiteListItem
         plural: whitelistitems
         singular: whitelistitem
+        shortNames:
+          - wl
     scope: Cluster
     versions:
         - name: v1alpha1
