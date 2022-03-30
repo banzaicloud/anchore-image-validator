@@ -7,6 +7,7 @@ require (
 	emperror.dev/errors v0.7.0
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/docker/distribution v2.8.0+incompatible
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/sirupsen/logrus v1.4.2
